@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>СОМА КЛУБ · SOMA CLUB — Мы говорим на языке тела</title>
+<script src="/vendor/supabase.min.js"></script>
+<style>
+  :root {
+    --cream: #FAF7F2;
+    --green: #7A9E7E;
+    --green-light: #EAF2EB;
+    --terra: #C17F59;
+    --terra-light: #F5EAE2;
+    --dark: #2C2C2C;
+    --mid: #6B6B6B;
+    --border: #E8E0D5;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Georgia', serif; background: var(--cream); color: var(--dark); }
+
+  nav { background: white; padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+  .logo { font-size: 20px; font-weight: bold; color: var(--green); letter-spacing: 2px; }
+  .nav-links a { margin-left: 24px; color: var(--mid); text-decoration: none; font-family: sans-serif; font-size: 14px; }
+  .nav-links a:hover { color: var(--green); }
+  .nav-btn { background: var(--green); color: white; border: none; padding: 10px 20px; border-radius: 24px; cursor: pointer; font-family: sans-serif; font-size: 14px; }
+
+  .hero { text-align: center; padding: 80px 24px 60px; max-width: 760px; margin: 0 auto; }
+  .hero-badge { display: inline-block; background: var(--green-light); color: var(--green); padding: 6px 16px; border-radius: 20px; font-size: 13px; font-family: sans-serif; margin-bottom: 24px; }
+  .hero h1 { font-size: 42px; line-height: 1.25; margin-bottom: 12px; }
+  .hero h1 span { color: var(--green); }
+  .hero-tagline { font-size: 16px; color: var(--terra); font-style: italic; margin-bottom: 20px; font-family: sans-serif; }
+  .hero p { font-size: 18px; color: var(--mid); line-height: 1.7; margin-bottom: 36px; }
+  .hero-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+  .btn-primary { background: var(--green); color: white; border: none; padding: 16px 36px; border-radius: 32px; font-size: 16px; cursor: pointer; font-family: sans-serif; }
+  .btn-secondary { background: transparent; color: var(--green); border: 2px solid var(--green); padding: 14px 36px; border-radius: 32px; font-size: 16px; cursor: pointer; font-family: sans-serif; }
+
+  .section { padding: 60px 24px; max-width: 1000px; margin: 0 auto; }
+  .section-title { text-align: center; font-size: 30px; margin-bottom: 40px; }
+  .benefits { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+  .benefit-card { background: white; border-radius: 16px; padding: 0; border: 1px solid var(--border); overflow: hidden; }
+  .benefit-photo { width: 100%; height: 180px; object-fit: cover; display: block; }
+  .benefit-body { padding: 24px 28px 28px; }
+  .benefit-card h3 { font-size: 18px; margin-bottom: 8px; }
+  .benefit-card p { color: var(--mid); font-size: 15px; line-height: 1.6; font-family: sans-serif; }
+
+  .for-whom { background: var(--green-light); padding: 60px 24px; }
+  .for-whom-inner { max-width: 800px; margin: 0 auto; text-align: center; }
+  .whom-list { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 24px; }
+  .whom-tag { background: white; border: 1px solid var(--green); color: var(--green); padding: 10px 20px; border-radius: 24px; font-family: sans-serif; font-size: 14px; }
+
+  .how-it-works { background: var(--terra-light); padding: 60px 24px; }
+  .how-inner { max-width: 800px; margin: 0 auto; text-align: center; }
+  .how-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; margin-top: 32px; }
+  .how-card { background: white; border-radius: 16px; padding: 28px; text-align: center; flex: 0 1 220px; }
+  .how-icon { width: 56px; height: 56px; border-radius: 50%; background: var(--green-light); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+  .how-icon svg { width: 28px; height: 28px; stroke: var(--green); fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .how-card h3 { font-size: 17px; margin-bottom: 8px; }
+  .how-card p { color: var(--mid); font-size: 14px; font-family: sans-serif; line-height: 1.6; }
+
+  .program { max-width: 800px; margin: 0 auto; padding: 60px 24px; }
+  .lesson-card { background: white; border-radius: 16px; padding: 24px 28px; margin-bottom: 16px; border: 1px solid var(--border); display: flex; gap: 20px; align-items: flex-start; }
+  .lesson-num { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-family: sans-serif; font-size: 14px; flex-shrink: 0; margin-top: 2px; }
+  .lesson-num.intro { background: var(--terra-light); color: var(--terra); }
+  .lesson-num.body { background: var(--green-light); color: var(--green); }
+  .lesson-num.dance { background: var(--terra-light); color: var(--terra); }
+  .lesson-info h3 { font-size: 17px; margin-bottom: 6px; }
+  .lesson-info p { color: var(--mid); font-size: 14px; font-family: sans-serif; line-height: 1.6; }
+  .lesson-tag { display: inline-block; font-size: 11px; font-family: sans-serif; padding: 3px 10px; border-radius: 12px; margin-bottom: 8px; }
+  .tag-intro { background: var(--terra-light); color: var(--terra); }
+  .tag-body { background: var(--green-light); color: var(--green); }
+  .tag-dance { background: var(--terra-light); color: var(--terra); }
+
+  .authors { background: white; padding: 60px 24px; border-top: 1px solid var(--border); }
+  .authors-inner { max-width: 800px; margin: 0 auto; }
+  .authors-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 32px; }
+  .author-card { background: var(--cream); border-radius: 16px; padding: 0; text-align: center; border: 1px solid var(--border); overflow: hidden; }
+  .author-photo { width: 100%; height: 340px; object-fit: cover; object-position: center top; display: block; filter: grayscale(100%) contrast(1.03); }
+  .author-body { padding: 24px 28px 28px; }
+  .author-card h3 { font-size: 20px; margin-bottom: 4px; }
+  .author-card .role { color: var(--green); font-family: sans-serif; font-size: 13px; margin-bottom: 12px; }
+  .author-card p { color: var(--mid); font-size: 14px; font-family: sans-serif; line-height: 1.6; }
+  .author-achievements { list-style: none; margin-top: 12px; text-align: left; }
+  .author-achievements li { font-family: sans-serif; font-size: 13px; color: var(--mid); padding: 4px 0; }
+  .author-achievements li::before { content: "🏆 "; }
+  .together-block { margin-top: 44px; text-align: center; }
+  .together-block img { width: 100%; max-width: 560px; border-radius: 16px; filter: grayscale(100%) contrast(1.03); display: block; margin: 0 auto 12px; }
+  .together-block p { color: var(--mid); font-family: sans-serif; font-size: 14px; font-style: italic; }
+
+  .pricing { max-width: 800px; margin: 0 auto; padding: 60px 24px; }
+  .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .price-card { background: white; border-radius: 20px; padding: 36px; border: 2px solid var(--border); }
+  .price-card.featured { border-color: var(--green); }
+  .price-card h3 { font-size: 20px; margin-bottom: 8px; }
+  .old-price { color: var(--mid); font-family: sans-serif; font-size: 14px; text-decoration: line-through; margin-bottom: 4px; }
+  .price { font-size: 40px; font-weight: bold; color: var(--green); margin: 4px 0 16px; }
+  .price span { font-size: 16px; color: var(--mid); }
+  .price-features { list-style: none; margin: 20px 0; }
+  .price-features li { font-family: sans-serif; font-size: 14px; color: var(--mid); padding: 7px 0; border-bottom: 1px solid var(--border); }
+  .price-features li::before { content: "✓ "; color: var(--green); font-weight: bold; }
+
+  .tg-banner { background: var(--green); color: white; padding: 40px 24px; text-align: center; }
+  .tg-banner h2 { font-size: 24px; margin-bottom: 8px; }
+  .tg-banner p { font-size: 16px; opacity: 0.85; font-family: sans-serif; margin-bottom: 20px; }
+  .tg-btn { background: white; color: var(--green); border: none; padding: 14px 32px; border-radius: 32px; font-size: 15px; cursor: pointer; font-family: sans-serif; font-weight: bold; text-decoration: none; display: inline-block; }
+
+  .faq { max-width: 700px; margin: 0 auto; padding: 60px 24px; }
+  .faq-item { border-bottom: 1px solid var(--border); }
+  .faq-q { width: 100%; background: none; border: none; text-align: left; padding: 20px 0; font-size: 16px; cursor: pointer; display: flex; justify-content: space-between; font-family: Georgia, serif; color: var(--dark); }
+  .faq-a { display: none; padding: 0 0 20px; color: var(--mid); font-family: sans-serif; font-size: 15px; line-height: 1.7; }
+  .faq-a.open { display: block; }
+
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; }
+  .overlay.active { display: flex; }
+  .modal { background: white; border-radius: 20px; padding: 40px; width: 100%; max-width: 440px; margin: 16px; }
+  .modal h2 { font-size: 24px; margin-bottom: 8px; }
+  .modal > p { color: var(--mid); font-size: 14px; font-family: sans-serif; margin-bottom: 24px; }
+  .modal input { width: 100%; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; font-size: 15px; margin-bottom: 14px; font-family: sans-serif; }
+  .modal-btn { width: 100%; background: var(--green); color: white; border: none; padding: 16px; border-radius: 32px; font-size: 16px; cursor: pointer; font-family: sans-serif; }
+  #buy-cover{display:none;position:fixed;inset:0;z-index:150;background:linear-gradient(160deg,#F6F1E8,#EFE7DA);align-items:center;justify-content:center;text-align:center;padding:24px}
+  #buy-cover .bc-inner{max-width:520px}
+  #buy-cover .bc-kick{letter-spacing:3px;text-transform:uppercase;font-size:12px;color:#B8946A;font-family:sans-serif;margin-bottom:10px}
+  #buy-cover .bc-title{font-size:40px;color:#3B322B;line-height:1.1;margin-bottom:14px}
+  #buy-cover .bc-sub{color:#5a4d40;font-family:sans-serif;font-size:15px;margin-bottom:26px;line-height:1.5}
+  #buy-cover .bc-back{color:#8A7C6E;font-family:sans-serif;font-size:14px;text-decoration:none;border-bottom:1px solid #d8cbb8}
+  #buy-cover .bc-back:hover{color:#5a4d40}
+  .close-btn { float: right; background: none; border: none; font-size: 20px; cursor: pointer; color: var(--mid); margin-top: -10px; }
+
+  /* DASHBOARD */
+  .dashboard { display: none; min-height: 100vh; background: var(--cream); }
+  .dash-header { background: white; padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+  .user-info { font-family: sans-serif; font-size: 14px; color: var(--mid); }
+  .logout-btn { background: none; border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 13px; font-family: sans-serif; color: var(--mid); margin-left: 16px; }
+  .dash-content { max-width: 900px; margin: 0 auto; padding: 40px 24px; }
+  .dash-title { font-size: 28px; margin-bottom: 8px; }
+  .dash-sub { color: var(--mid); font-family: sans-serif; font-size: 15px; margin-bottom: 32px; }
+  .progress-bar-wrap { background: var(--border); border-radius: 8px; height: 8px; margin-bottom: 40px; }
+  .progress-bar { background: var(--green); height: 8px; border-radius: 8px; transition: width 0.5s; }
+  .lessons-grid { display: flex; flex-direction: column; gap: 16px; }
+  .lesson-item { background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--border); cursor: pointer; transition: box-shadow 0.2s; }
+  .lesson-item:hover:not(.locked) { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .lesson-item.locked { opacity: 0.55; cursor: not-allowed; }
+  .lesson-item.completed { border-left: 4px solid var(--green); }
+  .lesson-item.current { border-left: 4px solid var(--terra); }
+  .lesson-meta { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+  .lesson-status { font-size: 18px; }
+  .lesson-type-tag { font-size: 11px; font-family: sans-serif; padding: 3px 10px; border-radius: 12px; }
+  .lesson-item h3 { font-size: 17px; margin-bottom: 4px; }
+  .lesson-item .lesson-subtitle { color: var(--terra); font-family: sans-serif; font-size: 13px; margin-bottom: 8px; font-style: italic; }
+  .lesson-item .lesson-desc { color: var(--mid); font-size: 14px; font-family: sans-serif; line-height: 1.6; }
+
+  /* LESSON VIEW */
+  .lesson-view { display: none; min-height: 100vh; background: var(--cream); }
+  .lesson-header { background: white; padding: 20px 32px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid var(--border); }
+  .back-btn { background: none; border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 13px; font-family: sans-serif; color: var(--mid); }
+  .lesson-header h2 { font-size: 18px; }
+  .lesson-body { max-width: 800px; margin: 0 auto; padding: 40px 24px; }
+  .video-wrap { background: #1a1a1a; border-radius: 16px; overflow: hidden; margin-bottom: 32px; aspect-ratio: 16/9; }
+  .video-wrap iframe { width: 100%; height: 100%; border: none; }
+  .theory-block { background: white; border-radius: 16px; padding: 32px; margin-bottom: 32px; border: 1px solid var(--border); }
+  .theory-block h3 { font-size: 20px; margin-bottom: 16px; color: var(--green); }
+  .theory-block p { color: var(--mid); font-size: 15px; font-family: sans-serif; line-height: 1.8; margin-bottom: 12px; }
+  .comment-section { background: white; border-radius: 16px; padding: 32px; border: 1px solid var(--border); }
+  .comment-section h3 { font-size: 20px; margin-bottom: 8px; }
+  .comment-section > p { color: var(--mid); font-family: sans-serif; font-size: 14px; margin-bottom: 20px; }
+  .comment-section textarea { width: 100%; padding: 16px; border: 1px solid var(--border); border-radius: 12px; font-size: 15px; font-family: sans-serif; resize: vertical; min-height: 120px; margin-bottom: 16px; }
+  .comment-btn { background: var(--green); color: white; border: none; padding: 14px 32px; border-radius: 32px; font-size: 15px; cursor: pointer; font-family: sans-serif; }
+  .comment-success { display: none; background: var(--green-light); color: var(--green); padding: 16px 20px; border-radius: 12px; font-family: sans-serif; font-size: 14px; margin-top: 12px; }
+  .completed-msg { display: none; background: var(--green-light); color: var(--green); padding: 16px 20px; border-radius: 12px; font-family: sans-serif; font-size: 14px; }
+
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 28px; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .authors-grid { grid-template-columns: 1fr; }
+    .how-card { flex-basis: 100%; }
+    nav .nav-links { display: none; }
+  }
+</style>
+<script src="/vendor/supabase.min.js"></script>
+</head>
+<body>
+
+<div id="landing">
+  <nav>
+    <div class="logo" onclick="window.scrollTo(0,0)" style="cursor:pointer;">СОМА КЛУБ · SOMA CLUB</div>
+    <div class="nav-links">
+      <a href="#program-section">Программа</a>
+      <a href="#authors-section">Авторы</a>
+      <a href="#pricing-section">Тарифы</a>
+      <a href="#faq-section">FAQ</a>
+      <a href="/utro.html" style="color:var(--green); font-weight:bold;">СОМА УТРО 🌿</a>
+    </div>
+    <button class="nav-btn" onclick="openModal('register')">Присоединиться</button>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-badge">🌿 Онлайн-клуб телесных практик</div>
+    <h1>Как за 20 минут снять<br>телесное и <span>эмоциональное напряжение</span></h1>
+    <div class="hero-tagline">Мы говорим на языке тела</div>
+    <p>Курс телесной терапии в рамках СОМА КЛУБ (SOMA CLUB) — это два модуля по 8 занятий (всего 16). Уже с первых занятий тело обнаруживает и отпускает хронические зажимы и боль: возвращается энергия, приходит расслабление и свободное дыхание. Проходите в своём темпе, дома.</p>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="openModal('register')">Начать практику</button>
+      <button class="btn-secondary" onclick="document.getElementById('program-section').scrollIntoView({behavior:'smooth'})">Смотреть программу</button>
+    </div>
+  </div>
+
+  <!-- УТРО STRIP -->
+  <a href="/utro.html" style="display:block; text-decoration:none; background:var(--green-light); border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:16px 24px; text-align:center; color:var(--dark); font-family:sans-serif; font-size:15px; line-height:1.5;">
+    🌿 Есть и живой формат — <b style="color:var(--green)">СОМА УТРО</b>: короткие практики в прямом эфире каждое утро. Узнать →
+  </a>
+
+  <!-- BENEFITS -->
+  <div class="section">
+    <div class="section-title">Клуб точно для тебя, если хочешь</div>
+    <div class="benefits">
+      <div class="benefit-card">
+        <img class="benefit-photo" src="01-stress.jpeg" alt="Снизить стресс и тревожность">
+        <div class="benefit-body">
+          <h3>Снизить стресс и тревожность</h3>
+          <p>Простые практики за 20 минут, которые реально снимают накопившееся напряжение.</p>
+        </div>
+      </div>
+      <div class="benefit-card">
+        <img class="benefit-photo" src="02-psychosomatics.jpeg" alt="Решить психосоматические проблемы">
+        <div class="benefit-body">
+          <h3>Решить психосоматические проблемы</h3>
+          <p>Простуды, головные боли, проблемы с ЖКТ, хроническая усталость — тело сигналит о том, что не прожито.</p>
+        </div>
+      </div>
+      <div class="benefit-card">
+        <img class="benefit-photo" src="03-energy.jpeg" alt="Повысить энергию и жизненный тонус">
+        <div class="benefit-body">
+          <h3>Повысить энергию и жизненный тонус</h3>
+          <p>Когда тело перестаёт тратить ресурс на удержание напряжения — энергия возвращается.</p>
+        </div>
+      </div>
+      <div class="benefit-card">
+        <img class="benefit-photo" src="04-self-contact.jpeg" alt="Улучшить контакт с собой">
+        <div class="benefit-body">
+          <h3>Улучшить контакт с собой</h3>
+          <p>Слышать свои чувства и желания — навык, который развивается через тело.</p>
+        </div>
+      </div>
+      <div class="benefit-card">
+        <img class="benefit-photo" src="05-emotions.jpeg" alt="Наладить эмоциональное состояние">
+        <div class="benefit-body">
+          <h3>Наладить эмоциональное состояние</h3>
+          <p>Уверенность в себе, устойчивость, способность выбирать реакцию вместо автопилота.</p>
+        </div>
+      </div>
+      <div class="benefit-card">
+        <img class="benefit-photo" src="06-relationships.jpeg" alt="Улучшить отношения с людьми">
+        <div class="benefit-body">
+          <h3>Улучшить отношения с людьми</h3>
+          <p>Свободное тело = свободное общение. Зажатость в теле проявляется и в контакте с другими.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOR WHOM -->
+  <div class="for-whom">
+    <div class="for-whom-inner">
+      <div class="section-title">Можно без подготовки</div>
+      <p style="color: var(--mid); font-family: sans-serif; font-size: 16px; line-height: 1.7;">Всё разработано для занятий дома. Потребуется немного пространства для движения и место, где можно удобно сесть. Вся программа рассчитана на любой уровень подготовки — важно лишь желание бережно позаботиться о себе.</p>
+      <div class="whom-list" style="margin-top: 24px;">
+        <div class="whom-tag">Хроническая усталость</div>
+        <div class="whom-tag">Тревога и стресс</div>
+        <div class="whom-tag">Срывы без причины</div>
+        <div class="whom-tag">Психосоматика</div>
+        <div class="whom-tag">Боль в спине и плечах</div>
+        <div class="whom-tag">Нет опыта практик</div>
+        <div class="whom-tag">Беременность ✓</div>
+        <div class="whom-tag">Занятые люди</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="how-it-works">
+    <div class="how-inner">
+      <div class="section-title">Как это работает</div>
+      <div class="how-grid">
+        <div class="how-card">
+          <div class="how-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10.5 8.5l5 3.5-5 3.5z"/></svg></div>
+          <h3>Включаете урок</h3>
+          <p>Следуете за ведущими, расслабляетесь и наслаждаетесь новыми состояниями. 15–20 минут.</p>
+        </div>
+        <div class="how-card">
+          <div class="how-icon"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L4 20l1.1-4.3A8.5 8.5 0 1 1 21 11.5z"/><path d="M8.5 10.5h7M8.5 13.5h4.5"/></svg></div>
+          <h3>Делитесь откликом</h3>
+          <p>После каждого урока — короткий отклик о своих ощущениях. Это открывает следующий урок.</p>
+        </div>
+        <div class="how-card">
+          <div class="how-icon"><svg viewBox="0 0 24 24"><path d="M12 20s-6.5-4.2-6.5-9.2A3.8 3.8 0 0 1 12 8a3.8 3.8 0 0 1 6.5 2.8C18.5 15.8 12 20 12 20z"/></svg></div>
+          <h3>Получаете поддержку</h3>
+          <p>Обратная связь от авторов, инструменты самопомощи, онлайн-встречи и личное сопровождение.</p>
+        </div>
+        <div class="how-card">
+          <div class="how-icon"><svg viewBox="0 0 24 24"><path d="M12 19.5c-3.2 0-6.2-2-6.2-5 2.1 0 4.2 1.1 6.2 3.2 2-2.1 4.1-3.2 6.2-3.2 0 3-3 5-6.2 5z"/><path d="M12 17.5c-1.6-1.6-2.6-3.7-2.6-5.8 0-1.9 1-3.7 2.6-5.2 1.6 1.5 2.6 3.3 2.6 5.2 0 2.1-1 4.2-2.6 5.8z"/></svg></div>
+          <h3>Становитесь целостным</h3>
+          <p>8 занятий складываются в систему. Результат приходит в комплексе — тело и психика вместе.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROGRAM -->
+  <div class="program" id="program-section">
+    <div class="section-title">Программа</div>
+    <p style="text-align:center; color:var(--mid); font-family:sans-serif; margin-bottom:10px;">Два модуля по 8 занятий (всего 16) · телесная + танцевально-двигательная терапия · по 15–20 минут</p>
+    <p style="text-align:center; color:var(--mid); font-family:sans-serif; font-size:15px; max-width:620px; margin:0 auto 22px;">Модуль 1 — основа: возвращаем телу чувствительность и снимаем первый слой напряжения. Модуль 2 — продолжение и углубление. Можно начать с Модуля 1, а можно взять любой из них отдельно.</p>
+    <h3 style="text-align:center;font-family:sans-serif;color:var(--green);font-size:15px;letter-spacing:1px;text-transform:uppercase;margin:0 0 22px;">Модуль 1 · Освобождение</h3>
+
+    <div class="lesson-card">
+      <div class="lesson-num intro">🌿</div>
+      <div class="lesson-info">
+        <div class="lesson-tag tag-intro">Вступление</div>
+        <h3>Застрявшая энергия: как наши эмоции блокируются в теле</h3>
+        <p>Теоретическая основа курса по методу Александра Лоуэна. Почему эмоции остаются в теле и что с этим делать.</p>
+      </div>
+    </div>
+    <div class="lesson-card">
+      <div class="lesson-num body">1</div>
+      <div class="lesson-info">
+        <div class="lesson-tag tag-body">Телесная практика</div>
+        <h3>Диалог с телом — возвращение чувствительности</h3>
+        <p>Через движение и ощущения учимся замечать своё тело — зону за зоной. Не оценивать, не исправлять. Просто замечать.</p>
+      </div>
+    </div>
+    <div class="lesson-card">
+      <div class="lesson-num dance">2</div>
+      <div class="lesson-info">
+        <div class="lesson-tag tag-dance">Танцевальная практика</div>
+        <h3>Движение через напряжение</h3>
+        <p>Двигаемся через напряжение и сопротивление. Там где тело сжато и застоялось — именно там и работаем.</p>
+      </div>
+    </div>
+    <div class="lesson-card">
+      <div class="lesson-num body">3</div>
+      <div class="lesson-info">
+        <div class="lesson-tag tag-body">Телесная практика</div>
+        <h3>Метод, который меняет не только спину, но и мысли</h3>
+        <p>Метод Александера — функциональное единство тела и психики. Обнаружить скрытое напряжение, понять причины, действовать без избыточного усилия.</p>
+      </div>
+    </div>
+    <div class="lesson-card">
+      <div class="lesson-num dance">4</div>
+      <div class="lesson-info">
+        <div class="lesson-tag tag-dance">Танцевальная практика</div>
+        <h3>Исследование объёма и амплитуды</h3>
+        <p>Тело привыкает жить в маленьком объёме. Эта практика возвращает пространство — проходим по всем зонам, раскрываем то, что зажато.</p>
+      </div>
+    </div>
+    <div class="lesson-card">
+      <div class="lesson-num body">5</div>
+      <div class="lesson-info">
+        <div class="lesson-tag tag-body">Телесная практика</div>
+        <h3>Анатомия чувств — поиск блоков</h3>
+        <p>Где в вашем теле «живёт» тревога? Куда «прячется» подавленный гнев? Выявляем зоны хронического напряжения и экологично высвобождаем их.</p>
+      </div>
+    </div>
+    <div class="lesson-card">
+      <div class="lesson-num dance">6</div>
+      <div class="lesson-info">
+        <div class="lesson-tag tag-dance">Танцевальная практика</div>
+        <h3>Движение без шума — метод Фельденкрайза</h3>
+        <p>Восстановление естественной грации и свободы движений. Двигаться с минимальными усилиями и максимальной эффективностью.</p>
+      </div>
+    </div>
+    <div class="lesson-card">
+      <div class="lesson-num body">7</div>
+      <div class="lesson-info">
+        <div class="lesson-tag tag-body">Телесная практика</div>
+        <h3>Границы и свобода — работа с объёмом</h3>
+        <p>Через техники растяжения в движении увеличиваем физический объём тела, прорабатываем качество движений и учимся выходить за привычные рамки.</p>
+      </div>
+    </div>
+    <div class="lesson-card">
+      <div class="lesson-num dance">8</div>
+      <div class="lesson-info">
+        <div class="lesson-tag tag-dance">Танцевальная практика</div>
+        <h3>Медитация в действии — скорость тишины</h3>
+        <p>Медленное глубокое движение. Без цели куда-то прийти. Интеграция всего пройденного — тело и голова получают тишину и разрядку.</p>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:10px;">
+      <button class="btn-primary" onclick="document.getElementById('buy-p1').scrollIntoView({behavior:'smooth'})">Оформить Модуль 1 →</button>
+    </div>
+
+    <h3 style="text-align:center;font-family:sans-serif;color:var(--green);font-size:15px;letter-spacing:1px;text-transform:uppercase;margin:48px 0 8px;">Модуль 2 · Форма и интеграция</h3>
+    <p style="text-align:center; color:var(--mid); font-family:sans-serif; margin-bottom:22px;">Биосинтез · релаксация по Джекобсону · фокусировка по Джендлину + танцевальная линия</p>
+
+    <div class="lesson-card">
+      <div class="lesson-num intro">🌿</div>
+      <div class="lesson-info">
+        <div class="lesson-tag tag-intro">Вступление</div>
+        <h3>Форма и интеграция — язык тела</h3>
+        <p>Теоретическая основа Модуля 2: биосинтез, дыхание и релаксация, фокусировка на ощущениях, а движению придаём форму.</p>
+      </div>
+    </div>
+    <div class="lesson-card">
+      <div class="lesson-num body">1</div>
+      <div class="lesson-info">
+        <div class="lesson-tag tag-body">Телесная практика</div>
+        <h3>Биосинтез — интеграция мысли, чувства и действия</h3>
+        <p>Метод Дэвида Боаделлы. Знакомство с собой и вертикальное заземление.</p>
+      </div>
+    </div>
+    <div class="lesson-card">
+      <div class="lesson-num dance">2</div>
+      <div class="lesson-info">
+        <div class="lesson-tag tag-dance">Танцевальная практика</div>
+        <h3>Форма через движение — волна через тело</h3>
+        <p>Волна проходит через руки, позвоночник и бёдра. Тело начинает говорить на языке движения.</p>
+      </div>
+    </div>
+    <div class="lesson-card">
+      <div class="lesson-num body">3</div>
+      <div class="lesson-info">
+        <div class="lesson-tag tag-body">Телесная практика</div>
+        <h3>Биосинтез II — дыхание</h3>
+        <p>Дыхание эмоций, дыхание для успокоения и «видение».</p>
+      </div>
+    </div>
+    <div class="lesson-card">
+      <div class="lesson-num dance">4</div>
+      <div class="lesson-info">
+        <div class="lesson-tag tag-dance">Танцевальная практика</div>
+        <h3>Движение и форма — круги в пространстве</h3>
+        <p>Каждая часть тела чертит свою траекторию. Внимание учится удерживаться на процессе.</p>
+      </div>
+    </div>
+    <div class="lesson-card">
+      <div class="lesson-num body">5</div>
+      <div class="lesson-info">
+        <div class="lesson-tag tag-body">Телесная практика</div>
+        <h3>Мышечная релаксация по Джекобсону</h3>
+        <p>После сильного напряжения мышца автоматически расслабляется глубже — на этом строится практика.</p>
+      </div>
+    </div>
+    <div class="lesson-card">
+      <div class="lesson-num dance">6</div>
+      <div class="lesson-info">
+        <div class="lesson-tag tag-dance">Танцевальная практика</div>
+        <h3>Форма восьмёрки</h3>
+        <p>Волна и круг соединяются в одном движении. У каждой части тела — своя восьмёрка и свой ритм.</p>
+      </div>
+    </div>
+    <div class="lesson-card">
+      <div class="lesson-num body">7</div>
+      <div class="lesson-info">
+        <div class="lesson-tag tag-body">Телесная практика</div>
+        <h3>Метод фокусировки по Джендлину</h3>
+        <p>Диалог с телом на языке ощущений. Практики: распределённое внимание и «незавершённое дело».</p>
+      </div>
+    </div>
+    <div class="lesson-card">
+      <div class="lesson-num dance">8</div>
+      <div class="lesson-info">
+        <div class="lesson-tag tag-dance">Танцевальная практика</div>
+        <h3>Импульс как начало движения</h3>
+        <p>Маленькое движение — и тело подхватывает само. Задача не контролировать, а почувствовать.</p>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:10px;">
+      <button class="btn-primary" onclick="document.getElementById('buy-p2').scrollIntoView({behavior:'smooth'})">Оформить Модуль 2 →</button>
+    </div>
+  </div>
+
+  <!-- AUTHORS -->
+  <div class="authors" id="authors-section">
+    <div class="authors-inner">
+      <div class="section-title">Авторы программы</div>
+      <div class="authors-grid">
+        <div class="author-card">
+          <img class="author-photo" src="daria.jpeg" alt="Дарья Нестерович">
+          <div class="author-body">
+            <h3>Дарья Нестерович</h3>
+            <div class="role">Психолог · Телесный терапевт · Преподаватель</div>
+            <p>Преподаватель кафедры психологии РГГУ. Основатель СОМА КЛУБ (SOMA CLUB). Специализация — телесно-ориентированная психотерапия и работа с эмоциями через тело.</p>
+          </div>
+        </div>
+        <div class="author-card">
+          <img class="author-photo" src="maxim.jpeg" alt="Максим Нестерович">
+          <div class="author-body">
+            <h3>Максим Нестерович</h3>
+            <div class="role">Хореограф · Преподаватель · 20 лет стажа</div>
+            <p>Автор методики, направленной на раскрепощение и свободное проявление через танец.</p>
+            <ul class="author-achievements">
+              <li>Победитель проекта «Танцы на ТНТ»</li>
+              <li>Бронзовый призёр «Битва сезонов на ТНТ»</li>
+              <li>Чемпион России Hip Hop International</li>
+              <li>Бронзовый призёр чемпионата мира Hip Hop International, Лас-Вегас</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="together-block">
+        <img src="together.jpeg" alt="Дарья и Максим Нестерович — создатели СОМА КЛУБ (SOMA CLUB)">
+        <p>Дарья и Максим Нестерович — создатели СОМА КЛУБ (SOMA CLUB)</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRICING -->
+  <div class="pricing" id="pricing-section">
+    <div class="section-title">Подписка на 30 дней</div>
+    <h3 id="buy-p1" style="text-align:center;font-family:sans-serif;color:var(--green);font-size:15px;letter-spacing:1px;text-transform:uppercase;margin:0 0 18px;scroll-margin-top:80px;">Модуль 1 · Освобождение · 8 уроков</h3>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <h3>Самостоятельно</h3>
+        <div class="old-price">2 800 ₽</div>
+        <div class="price">1 800 <span>₽</span></div>
+        <ul class="price-features">
+          <li>Доступ ко всем материалам курса</li>
+          <li>8 занятий (~15–20 минут)</li>
+          <li>Вступительный теоретический урок</li>
+          <li>Структура и последовательность по программе</li>
+          <li>Повторять в удобное время</li>
+        </ul>
+        <button class="btn-primary" style="width:100%" onclick="payTariff('solo')">Оформить за 1 800 ₽</button>
+      </div>
+      <div class="price-card featured">
+        <h3>С сопровождением</h3>
+        <div class="old-price">15 000 ₽</div>
+        <div class="price">10 000 <span>₽</span></div>
+        <ul class="price-features">
+          <li>Всё из тарифа «Самостоятельно»</li>
+          <li>Развёрнутая обратная связь по практикам</li>
+          <li>Видеосозвоны и персональные рекомендации</li>
+          <li>Мотивация, поддержка, контроль практик</li>
+          <li>Инструменты самопомощи</li>
+        </ul>
+        <button class="btn-primary" style="width:100%" onclick="payTariff('guided')">Оформить за 10 000 ₽</button>
+      </div>
+    </div>
+
+    <h3 id="buy-p2" style="text-align:center;font-family:sans-serif;color:var(--green);font-size:15px;letter-spacing:1px;text-transform:uppercase;margin:44px 0 8px;scroll-margin-top:80px;">Модуль 2 · Форма и интеграция · 8 уроков</h3>
+    <p style="text-align:center;font-family:sans-serif;font-size:14px;color:var(--mid);margin:0 0 18px;">Новые методы: биосинтез, релаксация по Джекобсону, фокусировка по Джендлину + танцевальная линия (волна · круг · восьмёрка · импульс).</p>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <h3>Самостоятельно</h3>
+        <div class="old-price">2 800 ₽</div>
+        <div class="price">1 800 <span>₽</span></div>
+        <ul class="price-features">
+          <li>Доступ ко всем материалам Модуля 2</li>
+          <li>8 новых занятий (~15–20 минут)</li>
+          <li>Вступительный теоретический урок</li>
+          <li>Структура и последовательность по программе</li>
+          <li>Повторять в удобное время</li>
+        </ul>
+        <button class="btn-primary" style="width:100%" onclick="payTariff('potok2_solo')">Оформить за 1 800 ₽</button>
+      </div>
+      <div class="price-card featured">
+        <h3>С сопровождением</h3>
+        <div class="old-price">15 000 ₽</div>
+        <div class="price">10 000 <span>₽</span></div>
+        <ul class="price-features">
+          <li>Всё из тарифа «Самостоятельно»</li>
+          <li>Развёрнутая обратная связь по практикам</li>
+          <li>Видеосозвоны и персональные рекомендации</li>
+          <li>Мотивация, поддержка, контроль практик</li>
+          <li>Инструменты самопомощи</li>
+        </ul>
+        <button class="btn-primary" style="width:100%" onclick="payTariff('potok2_guided')">Оформить за 10 000 ₽</button>
+      </div>
+    </div>
+
+    <p style="text-align:center; font-family:sans-serif; font-size:13px; color:var(--mid); margin-top:24px;">
+      Нажимая «Оформить», вы принимаете <a href="oferta.html" style="color:var(--green);">условия оферты</a>
+      и <a href="privacy.html" style="color:var(--green);">политику конфиденциальности</a>.
+    </p>
+  </div>
+
+  <!-- ОТЗЫВЫ (замените примеры на реальные отзывы учеников) -->
+  <div style="max-width:1000px; margin:0 auto; padding:60px 24px;">
+    <div class="section-title" style="text-align:center; margin-bottom:32px;">Отзывы</div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px;">
+
+      <div style="background:#fff; border:2px solid var(--green); border-radius:16px; padding:24px; grid-column:1 / -1;">
+        <div style="color:#e0a93b; font-size:15px; margin-bottom:10px;">★★★★★</div>
+        <p style="font-family:sans-serif; font-size:15px; line-height:1.7; color:var(--dark); margin:0 0 16px;">«Курс от Soma Club отлично подходит для тех, кто хочет сразу расслабиться, а не загружаться сложными психологическими теориями и танцевальными связками. Теория быстро переходит в понятную и простую практику, чтобы можно было без труда начать делать и получать результат. Танцевальная часть интуитивно понятна, без задачи точно повторить и успеть — всё в своём комфортном режиме, так как нужно именно тебе здесь и сейчас 👍🏻 Просто включай и чувствуй, что происходит.»</p>
+        <div style="font-family:sans-serif; font-size:14px; color:var(--mid);">Участница курса SOMA CLUB</div>
+      </div>
+
+      <div style="background:#fff; border:1px solid var(--border); border-radius:16px; padding:24px;">
+        <div style="color:#e0a93b; font-size:15px; margin-bottom:10px;">★★★★★</div>
+        <p style="font-family:sans-serif; font-size:15px; line-height:1.7; color:var(--dark); margin:0 0 16px;">«Не верила, что 20 минут в день что-то изменят. Через неделю заметила, что перестала сутулиться и впервые за месяцы выспалась. Плечи будто отпустило.»</p>
+        <div style="font-family:sans-serif; font-size:14px; color:var(--mid);">Анна, 34 года</div>
+      </div>
+
+      <div style="background:#fff; border:1px solid var(--border); border-radius:16px; padding:24px;">
+        <div style="color:#e0a93b; font-size:15px; margin-bottom:10px;">★★★★★</div>
+        <p style="font-family:sans-serif; font-size:15px; line-height:1.7; color:var(--dark); margin:0 0 16px;">«Давно искала что-то телесное, но без спортзала и без эзотерики. Здесь всё бережно и понятно. Тревога стала тише, дышать легче. Спасибо Дарье и Максиму.»</p>
+        <div style="font-family:sans-serif; font-size:14px; color:var(--mid);">Мария, 41 год</div>
+      </div>
+
+      <div style="background:#fff; border:1px solid var(--border); border-radius:16px; padding:24px;">
+        <div style="color:#e0a93b; font-size:15px; margin-bottom:10px;">★★★★★</div>
+        <p style="font-family:sans-serif; font-size:15px; line-height:1.7; color:var(--dark); margin:0 0 16px;">«Танцевальные практики — моё открытие. Тело вспомнило, как двигаться свободно. После рабочего дня это лучшее, что можно для себя сделать.»</p>
+        <div style="font-family:sans-serif; font-size:14px; color:var(--mid);">Ольга, 29 лет</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- СОМА УТРО -->
+  <div id="utro-promo" style="background:var(--green-light); padding:56px 24px; text-align:center;">
+    <div style="max-width:640px; margin:0 auto;">
+      <div style="display:inline-block; background:white; color:var(--green); border:1px solid var(--green); padding:6px 16px; border-radius:20px; font-family:sans-serif; font-size:13px; margin-bottom:18px;">🌿 Мягкий вход в практику</div>
+      <h2 style="font-size:28px; color:var(--dark); margin-bottom:12px;">СОМА УТРО — живые эфиры по утрам</h2>
+      <p style="font-family:sans-serif; font-size:16px; color:var(--mid); margin-bottom:26px;">Не готовы к полному курсу? Начните с малого. Короткие телесные практики в прямом эфире 5 дней в неделю в 7:00 по Москве, в тёплом закрытом сообществе. Всего 1 490 ₽ в месяц.</p>
+      <a href="/utro.html" style="display:inline-block; background:var(--green); color:white; text-decoration:none; padding:16px 36px; border-radius:32px; font-size:16px; font-family:sans-serif;">Узнать про СОМА УТРО →</a>
+    </div>
+  </div>
+
+  <!-- TELEGRAM BANNER -->
+  <div class="tg-banner">
+    <h2>Присоединяйтесь к клубу в Telegram</h2>
+    <p>Общение, поддержка и дополнительные материалы — всё в одном месте</p>
+    <a class="tg-btn" href="https://t.me/Daria_its_me_vibe" target="_blank">Открыть Telegram-клуб</a>
+  </div>
+
+  <!-- FAQ -->
+  <div class="faq" id="faq-section">
+    <div class="section-title">Часто задаваемые вопросы</div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Могу ли заниматься дома? <span>+</span></button>
+      <div class="faq-a">Да, всё разработано для занятий дома. Потребуется немного пространства для движения и место, куда можно удобно присесть или расположиться.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Если нет опыта телесных практик — подойдёт? <span>+</span></button>
+      <div class="faq-a">Да, вся программа рассчитана на любой уровень подготовки. Это универсальный курс — важно лишь желание бережно позаботиться о себе.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Сколько времени занимает каждый урок? <span>+</span></button>
+      <div class="faq-a">Около 20 минут. Всего две практики в неделю. Программа адаптирована под любой уровень загруженности — практикуйте, когда вам удобно.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Как открываются следующие уроки? <span>+</span></button>
+      <div class="faq-a">После каждого урока вы оставляете короткий отклик — что почувствовали, что заметили в теле. Это автоматически открывает следующий урок.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Можно ли беременным? <span>+</span></button>
+      <div class="faq-a">Да, даже рекомендуется. Практики мягкие и безопасные.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Куда написать, если остались вопросы? <span>+</span></button>
+      <div class="faq-a">Напишите нам напрямую в Telegram — ответим лично: <a href="https://t.me/daria_its_me" target="_blank" style="color:var(--green);">@daria_its_me</a></div>
+    </div>
+  </div>
+
+  <footer style="background:var(--dark); color:white; text-align:center; padding:40px 24px;">
+    <div class="logo" style="color:var(--green); margin-bottom:12px;">СОМА КЛУБ · SOMA CLUB</div>
+    <p style="color:#999; font-family:sans-serif; font-size:13px; margin-bottom:8px;">Нестерович Максим Валерьевич · ИНН 774311560630 · Налог на профессиональный доход</p>
+    <p style="font-family:sans-serif; font-size:13px; margin-bottom:8px;">
+      <a href="/utro.html" style="color:var(--green);">СОМА УТРО</a> &nbsp;·&nbsp;
+      <a href="oferta.html" style="color:var(--green);">Публичная оферта</a> &nbsp;·&nbsp;
+      <a href="privacy.html" style="color:var(--green);">Политика конфиденциальности</a>
+    </p>
+    <p style="color:#999; font-family:sans-serif; font-size:13px;">© 2026, СОМА КЛУБ (SomaClub)</p>
+  </footer>
+</div>
+
+<!-- MODALS -->
+<div class="overlay" id="modal-register">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal('register')">✕</button>
+    <h2>Добро пожаловать</h2>
+    <p>Создайте аккаунт чтобы начать практику</p>
+    <input type="text" id="reg-name" placeholder="Ваше имя">
+    <input type="email" id="reg-email" placeholder="Email">
+    <input type="password" id="reg-pass" placeholder="Пароль">
+    <label style="display:flex; align-items:flex-start; gap:9px; font-size:13px; color:var(--mid); margin:2px 0 16px; text-align:left; line-height:1.4; cursor:pointer">
+      <input type="checkbox" id="reg-consent" style="width:auto; flex:0 0 auto; margin:2px 0 0">
+      <span>Согласен(на) получать письма о курсе и полезные материалы. Отписаться можно в любой момент.</span>
+    </label>
+    <button class="modal-btn" onclick="register()">Создать аккаунт</button>
+    <p style="text-align:center;margin-top:16px;font-family:sans-serif;font-size:14px;color:var(--mid);">
+      Уже есть аккаунт? <a href="#" onclick="switchModal()" style="color:var(--green);">Войти</a>
+    </p>
+  </div>
+</div>
+<div class="overlay" id="modal-login">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal('login')">✕</button>
+    <h2>Войти</h2>
+    <p>Введите данные вашего аккаунта</p>
+    <input type="email" id="login-email" placeholder="Email">
+    <input type="password" id="login-pass" placeholder="Пароль">
+    <button class="modal-btn" onclick="login()">Войти</button>
+    <p style="text-align:center;margin-top:12px;font-family:sans-serif;font-size:13px;">
+      <a href="#" onclick="forgotPassword();return false;" style="color:var(--mid);">Забыли пароль?</a>
+    </p>
+    <p id="reset-msg" style="text-align:center;font-family:sans-serif;font-size:13px;margin:4px 0 0;"></p>
+    <p style="text-align:center;margin-top:12px;font-family:sans-serif;font-size:14px;color:var(--mid);">
+      Нет аккаунта? <a href="#" onclick="switchModalBack()" style="color:var(--green);">Зарегистрироваться</a>
+    </p>
+  </div>
+</div>
+
+<!-- BUY CONTEXT COVER -->
+<div id="buy-cover">
+  <div class="bc-inner">
+    <div class="bc-kick">Оформление подписки</div>
+    <div class="bc-title" id="bc-title">СОМА УТРО</div>
+    <div class="bc-sub">Ещё один короткий шаг: регистрация привяжет доступ к вашей почте — затем перейдём к оплате. СОМА УТРО — часть SOMA CLUB, поэтому оформление здесь.</div>
+    <a class="bc-back" id="bc-back" href="/utro.html">← Вернуться на страницу СОМА УТРО</a>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard" id="dashboard">
+  <div class="dash-header">
+    <div class="logo" onclick="goHome()" style="cursor:pointer;" title="На главную">СОМА КЛУБ · SOMA CLUB</div>
+    <div style="display:flex;align-items:center;">
+      <div class="user-info" id="user-greeting">Привет!</div>
+      <button class="logout-btn" onclick="logout()">Выйти</button>
+    </div>
+  </div>
+  <div class="dash-content">
+    <div class="dash-title">Ваша программа</div>
+    <div class="stream-tabs" id="stream-tabs"></div>
+    <div class="dash-sub" id="progress-text">Начните с вступительного урока 🌿</div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+    <div class="lessons-grid" id="lessons-grid"></div>
+  </div>
+</div>
+
+<!-- LESSON VIEW -->
+<div class="lesson-view" id="lesson-view">
+  <div class="lesson-header">
+    <button class="back-btn" onclick="backToDashboard()">← Назад</button>
+    <h2 id="lesson-view-title"></h2>
+  </div>
+  <div class="lesson-body">
+    <div id="lesson-video-wrap" class="video-wrap" style="display:none">
+      <iframe id="lesson-iframe" allowfullscreen allow="autoplay"></iframe>
+    </div>
+    <div id="lesson-theory" class="theory-block" style="display:none"></div>
+    <div class="comment-section" id="comment-section">
+      <h3>Ваш отклик</h3>
+      <p>Что почувствовали? Что заметили в теле? Ваш отклик откроет следующий урок.</p>
+      <textarea id="comment-text" placeholder="Напишите свои ощущения..."></textarea>
+      <button class="comment-btn" onclick="submitComment()">Отправить отклик →</button>
+      <div class="comment-success" id="comment-success">✓ Отклик отправлен! Следующий урок открыт.</div>
+    </div>
+    <div class="completed-msg" id="completed-msg">✓ Урок пройден</div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = location.origin + '/sb';
+const SUPABASE_KEY = 'sb_publishable_QRv4hYsSpQyXJazl8hgZwQ_TFYLu9ZU';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Секреты вынесены на сервер (Netlify-функции). В коде сайта их нет.
+
+const LESSONS = [
+  { id:0, title:'Вступление: Застрявшая энергия', subtitle:'Как наши эмоции блокируются в теле — Александр Лоуэн',
+    description:'Теоретическая основа курса. Метод Лоуэна — биоэнергетика. Почему эмоции остаются в теле и что с этим делать.',
+    type:'intro', typeLabel:'Вступление', hasVideo:false,
+    theory:`<h3>Застрявшая энергия: как наши эмоции блокируются в теле</h3>
+      <p>Александр Лоуэн — основатель биоэнергетического анализа — открыл, что эмоции не существуют только в голове. Они живут в теле.</p>
+      <p>Когда мы переживаем сильную эмоцию — страх, гнев, обиду — и не можем её выразить, тело находит способ её «удержать». Мышцы напрягаются, дыхание становится поверхностным, осанка меняется.</p>
+      <p>Со временем эти паттерны напряжения становятся хроническими. Мы уже не помним изначальную эмоцию — но тело продолжает её нести. Это то, что Лоуэн называл «мышечным панцирем».</p>
+      <p>Хорошая новость: то, что тело запомнило — тело может и отпустить. Именно этому посвящена наша программа.</p>
+      <p>В следующих 8 уроках мы работаем с телом через движение — телесные практики и танец чередуются, создавая полный цикл работы с напряжением и освобождением.</p>
+      <p><strong>Как работать с программой:</strong> после каждого урока оставляйте отклик — что почувствовали, что заметили. Это открывает следующий урок и является частью практики осознанности.</p>`
+  },
+  { id:1, title:'Урок 1: Диалог с телом', subtitle:'Возвращение чувствительности',
+    description:'Через движение и ощущения учимся замечать своё тело — зону за зоной. Не оценивать, не исправлять. Просто замечать. Внимание возвращается туда, откуда давно ушло.',
+    type:'body', typeLabel:'🌿 Телесная практика', hasVideo:true, driveId:'1JjY1OjeG1BxtHzejj6WyN2_vwCv1K6Fm' },
+  { id:2, title:'Урок 2: Движение через напряжение', subtitle:'Поиск застойных мест',
+    description:'Двигаемся через напряжение и сопротивление. Там где тело сжато и застоялось — именно там и работаем.',
+    type:'dance', typeLabel:'〰️ Танцевальная практика', hasVideo:true, driveId:'16pN5lWc-emi7ZMqiLn8cBWR7gCpo4M5U' },
+  { id:3, title:'Урок 3: Метод Александера', subtitle:'Единство тела и психики',
+    description:'Обнаруживаем скрытое мышечное напряжение, понимаем его причины. Учимся действовать без избыточного усилия.',
+    type:'body', typeLabel:'🌿 Телесная практика', hasVideo:true, driveId:'1mnlw2Yd9_DjAcH8gWfiWHgbBxD6cuRTQ' },
+  { id:4, title:'Урок 4: Исследование объёма', subtitle:'Амплитуда и пространство тела',
+    description:'Тело привыкает жить в маленьком объёме. Эта практика возвращает пространство. Проходим по всем зонам — исследуем амплитуду, раскрываем то, что зажато.',
+    type:'dance', typeLabel:'⭕ Танцевальная практика', hasVideo:true, driveId:'1TGUHm-OwCm2PZgY-H0TzTElTAse4pu6e' },
+  { id:5, title:'Урок 5: Анатомия чувств', subtitle:'Поиск блоков и работа с напряжением',
+    description:'Где в вашем теле «живёт» тревога? Куда «прячется» подавленный гнев? Учимся выявлять зоны хронического напряжения и высвобождать их через движение.',
+    type:'body', typeLabel:'🌿 Телесная практика', hasVideo:true, driveId:'15C3QUj01jlYNt4ySET1b42PfJXxTGDDM' },
+  { id:6, title:'Урок 6: Метод Фельденкрайза', subtitle:'Движение без усилия',
+    description:'Восстановление естественной грации и свободы движений. Двигаться с минимальными усилиями и максимальной эффективностью. Найти собственный ритм.',
+    type:'dance', typeLabel:'〰️ Танцевальная практика', hasVideo:true, driveId:'1CQWnTfrYWZxUNdTdtKX5carzk5-2Tt8O' },
+  { id:7, title:'Урок 7: Границы и свобода', subtitle:'Работа с объёмом и растяжением',
+    description:'Мы часто живём в «панцире» собственных ограничений. Через растяжение в движении увеличиваем физический объём тела, выходим за привычные рамки.',
+    type:'body', typeLabel:'🌿 Телесная практика', hasVideo:true, driveId:'1RRHSwrbkdhRNK93YTJ8fySjRAG0PJdtz' },
+  { id:8, title:'Урок 8: Медитация в действии', subtitle:'Скорость тишины — завершение',
+    description:'Медленное глубокое движение. Без цели куда-то прийти. Тело и голова получают то, чего давно не хватало — тишину и разрядку. Интеграция всего пройденного.',
+    type:'dance', typeLabel:'✨ Танцевальная практика', hasVideo:true, driveId:'100KzRom2yoTIAepV-waDuVaZeOXxM1rM' }
+];
+
+// ===== ПОТОК 2 — «Форма и интеграция» (id 100–108, чтобы прогресс не путался с Потоком 1) =====
+const LESSONS_2 = [
+  { id:100, title:'Вступление: Форма и интеграция', subtitle:'От освобождения — к языку тела',
+    description:'Теоретическая основа Модуля 2. Углубляем работу: биосинтез, дыхание и релаксация, фокусировка на телесных ощущениях, а движению придаём форму.',
+    type:'intro', typeLabel:'Вступление', hasVideo:false,
+    theory:`<h3>Форма и интеграция: язык тела</h3>
+      <p>Если первый модуль возвращал чувствительность и снимал первый слой напряжения, то второй — про <strong>интеграцию</strong>: собрать мысль, чувство и движение воедино и дать телу свой язык.</p>
+      <p><strong>Биосинтез (Дэвид Боаделла).</strong> Подход об интеграции трёх потоков жизни — мысли, чувства и действия. Начинаем со знакомства с собой и заземления, продолжаем работой с дыханием эмоций.</p>
+      <p><strong>Дыхание и релаксация (Джекобсон).</strong> Тело учится отпускать через простой физиологический механизм: после сильного напряжения мышца расслабляется глубже.</p>
+      <p><strong>Фокусировка (Юджин Джендлин).</strong> Осознанный диалог с телом на языке ощущений — способ заметить то, что обычно течёт автоматически, и начать с этим работать.</p>
+      <p><strong>Танцевальная линия.</strong> Волна → круг → восьмёрка → импульс: движению придаём форму, и тело начинает говорить.</p>
+      <p><strong>Как работать:</strong> после каждого урока оставляйте отклик — что почувствовали, что заметили. Это открывает следующий урок и само по себе является практикой.</p>`
+  },
+  { id:101, title:'Урок 1: Биосинтез', subtitle:'Интеграция мысли, чувства и действия',
+    description:'Метод биосинтеза (Дэвид Боаделла, начало 1970-х) направлен на интеграцию мыслительной, чувственной и действенной сфер. Практики: знакомство с собой и вертикальное заземление.',
+    type:'body', typeLabel:'🌿 Телесная практика', hasVideo:true, driveId:'1mwDS9tTn9rEOKjFkFiPNxyxWvtLDf4Jz' },
+  { id:102, title:'Урок 2: Форма через движение', subtitle:'Волна через тело',
+    description:'Учимся придавать движению форму через волну. Исследуем, как волна проходит через руки, позвоночник и бёдра. Тело начинает говорить на языке движения.',
+    type:'dance', typeLabel:'〰️ Танцевальная практика', hasVideo:true, driveId:'1nSUNwPkmAQ8fcj3P6nZ9gguDkkadKdxD' },
+  { id:103, title:'Урок 3: Биосинтез II. Дыхание', subtitle:'Дыхание эмоций и успокоение',
+    description:'Продолжение биосинтеза. Практики: дыхание эмоций, дыхание для успокоения и «видение».',
+    type:'body', typeLabel:'🌿 Телесная практика', hasVideo:true, driveId:'1yKuNz-5wISmfYlulAoFCcxWild1nYkyM' },
+  { id:104, title:'Урок 4: Движение и форма', subtitle:'Круги в пространстве',
+    description:'Продолжаем работу с воображением — рисуем круги в пространстве, каждая часть тела чертит свою траекторию. Внимание учится удерживаться на процессе — это само по себе практика.',
+    type:'dance', typeLabel:'⭕ Танцевальная практика', hasVideo:true, driveId:'1khQZOdBTFHeRk0Yjb8caqrSfIRrkV3km' },
+  { id:105, title:'Урок 5: Мышечная релаксация по Джекобсону', subtitle:'Напряжение → глубокое расслабление',
+    description:'Прогрессивная мышечная релаксация. В основе — простой физиологический факт: после сильного напряжения мышца автоматически глубоко расслабляется.',
+    type:'body', typeLabel:'🌿 Телесная практика', hasVideo:true, driveId:'1Tvyp9Hfstk_AEVXNjxrm5oGXW7f_2VYY' },
+  { id:106, title:'Урок 6: Форма восьмёрки', subtitle:'Волна и круг в одном движении',
+    description:'Осваиваем восьмёрку — форму, которая объединяет всё пройденное. Волна и круг соединяются в одном движении. Каждая часть тела — своя восьмёрка, свой ритм.',
+    type:'dance', typeLabel:'〰️ Танцевальная практика', hasVideo:true, driveId:'1gQ9LXOxFdOck6RZYfslAp4lUMl1qoVQJ' },
+  { id:107, title:'Урок 7: Метод фокусировки по Джендлину', subtitle:'Диалог на языке телесных ощущений',
+    description:'Фокусировка — метод сознательно-подсознательного диалога через телесные ощущения: делаем осознанным то, что обычно течёт автоматически, и получаем возможность с этим работать. Практики: распределённое внимание и модификация «Незавершённое дело».',
+    type:'body', typeLabel:'🌿 Телесная практика', hasVideo:true, driveId:'1D-2adJhqMxq_QSrK2e_1hWBe6_qax7HT' },
+  { id:108, title:'Урок 8: Импульс как начало движения', subtitle:'Тело подхватывает само',
+    description:'Работаем с импульсом. Маленькое движение — и тело отвечает само. Задача не контролировать, а почувствовать, как тело подхватывает и продолжает. Каждый работает в своём объёме — и это правильно.',
+    type:'dance', typeLabel:'✨ Танцевальная практика', hasVideo:true, driveId:'1L4N_3Bol4N_JKrlCll3kHIxhccEsEWMB' }
+];
+
+let currentUser = null, currentLessonId = null;
+
+function getProgress() {
+  const p = localStorage.getItem('sc_progress_' + (currentUser?.email || 'guest'));
+  return p ? JSON.parse(p) : { completed: [] };
+}
+function saveProgress(d) {
+  localStorage.setItem('sc_progress_' + (currentUser?.email || 'guest'), JSON.stringify(d));
+}
+
+async function loadProgressFromSupabase() {
+  if (!currentUser?.id) return;
+  const { data, error } = await supabaseClient
+    .from('progress')
+    .select('lesson_id')
+    .eq('user_id', currentUser.id);
+  if (error) {
+    console.error('Ошибка загрузки прогресса:', error);
+    return;
+  }
+  const completed = [...new Set((data || []).map(r => r.lesson_id))].sort((a, b) => a - b);
+  saveProgress({ completed });
+}
+function openModal(t) { document.getElementById('modal-'+t).classList.add('active'); }
+function closeModal(t) { document.getElementById('modal-'+t).classList.remove('active'); }
+function switchModal() { closeModal('register'); openModal('login'); }
+function switchModalBack() { closeModal('login'); openModal('register'); }
+
+async function register() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  if (!name || !email) { alert('Заполните имя и email'); return; }
+
+  const btn = document.querySelector('#modal-register .modal-btn');
+  btn.disabled = true;
+  btn.textContent = 'Создаём аккаунт...';
+
+  const { data: existing } = await supabaseClient.from('users').select('id').eq('email', email).maybeSingle();
+  if (existing) {
+    btn.disabled = false;
+    btn.textContent = 'Создать аккаунт';
+    alert('Этот email уже зарегистрирован. Войдите в аккаунт.');
+    switchModal();
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from('users')
+    .insert({ email, name })
+    .select('id, email, name')
+    .single();
+
+  btn.disabled = false;
+  btn.textContent = 'Создать аккаунт';
+
+  if (error) {
+    console.error(error);
+    alert('Не удалось создать аккаунт. Попробуйте позже.');
+    return;
+  }
+
+  currentUser = { id: data.id, name: data.name, email: data.email };
+  saveProgress({ completed: [] });
+  localStorage.setItem('sc_user', JSON.stringify(currentUser));
+  closeModal('register');
+  showDashboard();
+}
+
+async function login() {
+  const email = document.getElementById('login-email').value.trim();
+  if (!email) { alert('Введите email'); return; }
+
+  const btn = document.querySelector('#modal-login .modal-btn');
+  btn.disabled = true;
+  btn.textContent = 'Входим...';
+
+  const { data, error } = await supabaseClient
+    .from('users')
+    .select('id, email, name')
+    .eq('email', email)
+    .maybeSingle();
+
+  btn.disabled = false;
+  btn.textContent = 'Войти';
+
+  if (error) {
+    console.error(error);
+    alert('Ошибка входа. Попробуйте позже.');
+    return;
+  }
+  if (!data) {
+    alert('Пользователь с таким email не найден. Зарегистрируйтесь.');
+    switchModalBack();
+    return;
+  }
+
+  currentUser = { id: data.id, name: data.name, email: data.email };
+  localStorage.setItem('sc_user', JSON.stringify(currentUser));
+  await loadProgressFromSupabase();
+  closeModal('login');
+  showDashboard();
+}
+function logout() {
+  currentUser = null;
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('landing').style.display = 'block';
+}
+async function showDashboard() {
+  document.getElementById('landing').style.display = 'none';
+  document.getElementById('lesson-view').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('user-greeting').textContent = 'Привет, ' + currentUser.name + '!';
+  if (currentUser?.id) await loadProgressFromSupabase();
+  renderLessons();
+}
+function renderLessons() {
+  const progress = getProgress();
+  const completed = progress.completed;
+  const grid = document.getElementById('lessons-grid');
+  grid.innerHTML = '';
+  const pct = Math.round((completed.length / LESSONS.length) * 100);
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-text').textContent =
+    completed.length === 0 ? 'Начните с вступительного урока 🌿' :
+    completed.length === LESSONS.length ? 'Программа пройдена! Поздравляем 🎉' :
+    `Пройдено ${completed.length} из ${LESSONS.length} уроков`;
+
+  LESSONS.forEach((lesson, idx) => {
+    const isDone = completed.includes(lesson.id);
+    const isUnlocked = idx === 0 || completed.includes(LESSONS[idx-1].id);
+    const typeStyle = lesson.type === 'body' ? 'background:var(--green-light);color:var(--green)' : 'background:var(--terra-light);color:var(--terra)';
+    const div = document.createElement('div');
+    div.className = 'lesson-item' + (isDone?' completed':'') + (isUnlocked&&!isDone?' current':'') + (!isUnlocked?' locked':'');
+    div.innerHTML = `
+      <div class="lesson-meta">
+        <span class="lesson-status">${isDone?'✅':isUnlocked?'▶️':'🔒'}</span>
+        <span class="lesson-type-tag" style="${typeStyle}">${lesson.typeLabel}</span>
+      </div>
+      <h3>${lesson.title}</h3>
+      <div class="lesson-subtitle">${lesson.subtitle}</div>
+      <div class="lesson-desc">${lesson.description}</div>`;
+    if (isUnlocked) div.onclick = () => openLesson(lesson.id);
+    grid.appendChild(div);
+  });
+}
+function openLesson(id) {
+  const lesson = LESSONS.find(l => l.id === id);
+  currentLessonId = id;
+  const isDone = getProgress().completed.includes(id);
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('lesson-view').style.display = 'block';
+  document.getElementById('lesson-view-title').textContent = lesson.title;
+  const vw = document.getElementById('lesson-video-wrap');
+  const tb = document.getElementById('lesson-theory');
+  if (lesson.hasVideo) {
+    vw.style.display = 'block'; tb.style.display = 'none';
+    document.getElementById('lesson-iframe').src = `https://drive.google.com/file/d/${lesson.driveId}/preview`;
+  } else {
+    vw.style.display = 'none'; tb.style.display = 'block';
+    tb.innerHTML = lesson.theory;
+  }
+  document.getElementById('comment-success').style.display = 'none';
+  document.getElementById('comment-text').value = '';
+  document.querySelector('.comment-btn').style.display = 'inline-block';
+  document.getElementById('comment-section').style.display = isDone ? 'none' : 'block';
+  document.getElementById('completed-msg').style.display = isDone ? 'block' : 'none';
+}
+function backToDashboard() {
+  document.getElementById('lesson-view').style.display = 'none';
+  document.getElementById('lesson-iframe').src = '';
+  showDashboard();
+}
+async function submitComment() {
+  const text = document.getElementById('comment-text').value.trim();
+  if (!text) { alert('Напишите ваш отклик'); return; }
+  var __wc = text.split(/\s+/).filter(function(w){ return w.length >= 2; }).length;
+  var __letters = (text.match(/[a-zа-яё]/gi) || []).length;
+  if (text.length < 25 || __wc < 4 || __letters < 15) { alert('Опишите свои ощущения чуть подробнее — хотя бы пару предложений: что почувствовали, что заметили в теле.'); return; }
+  var __lsn = streamLessons().find(function(l){ return l.id === currentLessonId; });
+  var __reqMs = (__lsn && __lsn.hasVideo === false) ? 0 : 900000;
+  if (__reqMs > 0 && window.__lessonOpenedAt && (Date.now() - window.__lessonOpenedAt) < __reqMs) { alert('Пройдите урок до конца, прежде чем оставить отклик. Практика идёт около 15–20 минут 🌿'); return; }
+  if (!currentUser?.id) { alert('Войдите в аккаунт'); return; }
+
+  const btn = document.querySelector('.comment-btn');
+  btn.disabled = true;
+  btn.textContent = 'Отправляем...';
+
+  const lesson = LESSONS.find(l => l.id === currentLessonId);
+  const msg = `🌿 Новый отклик — SOMA CLUB\n\n👤 ${currentUser.name}\n📧 ${currentUser.email}\n📚 ${lesson.title}\n🏷 ${lesson.typeLabel}\n\n💬 ${text}`;
+  /* отправка перенесена в обновлённый submitComment ниже */ void 0;
+
+  const p = getProgress();
+  const alreadyDone = p.completed.includes(currentLessonId);
+
+  if (!alreadyDone) {
+    const { error } = await supabaseClient.from('progress').insert({
+      user_id: currentUser.id,
+      lesson_id: currentLessonId,
+      comment: text
+    });
+    if (error) {
+      console.error(error);
+      btn.disabled = false;
+      btn.textContent = 'Отправить отклик →';
+      alert('Не удалось сохранить отклик. Попробуйте ещё раз.');
+      return;
+    }
+    p.completed.push(currentLessonId);
+    saveProgress(p);
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Отправить отклик →';
+  document.getElementById('comment-success').style.display = 'block';
+  btn.style.display = 'none';
+  setTimeout(() => backToDashboard(), 2000);
+}
+function toggleFaq(btn) {
+  const a = btn.nextElementSibling;
+  a.classList.toggle('open');
+  btn.querySelector('span').textContent = a.classList.contains('open') ? '−' : '+';
+}
+window.onload = async function() {
+  const s = localStorage.getItem('sc_user');
+  if (!s) return;
+  currentUser = JSON.parse(s);
+  if (!currentUser.id && currentUser.email) {
+    const { data } = await supabaseClient.from('users').select('id, email, name').eq('email', currentUser.email).maybeSingle();
+    if (data) {
+      currentUser = { id: data.id, name: data.name, email: data.email };
+      localStorage.setItem('sc_user', JSON.stringify(currentUser));
+    }
+  }
+  if (currentUser?.id) await loadProgressFromSupabase();
+  showDashboard();
+};
+</script>
+<script>
+// ===== SOMA CLUB: настоящий вход (Supabase Auth) + доступ по оплате =====
+var hasAccess = false;      // доступ к Потоку 1
+var hasAccess2 = false;     // доступ к Потоку 2
+var currentStream = 1;      // выбранный поток в кабинете
+function streamLessons(){ return currentStream === 2 ? LESSONS_2 : LESSONS; }
+function streamAccess(){ return currentStream === 2 ? hasAccess2 : hasAccess; }
+function switchStream(n){ currentStream = n; window.__streamChosen = true; renderStreamTabs(); renderLessons(); window.scrollTo(0,0); }
+function renderStreamTabs(){
+  var el = document.getElementById('stream-tabs'); if (!el) return;
+  el.style.cssText = 'display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 20px';
+  function tab(n,label,active){
+    var base = 'padding:9px 16px;border-radius:22px;font-family:sans-serif;font-size:14px;cursor:pointer;border:1px solid var(--green);';
+    var st = active ? base+'background:var(--green);color:#fff' : base+'background:transparent;color:var(--green)';
+    return '<button style="'+st+'" onclick="switchStream('+n+')">'+label+'</button>';
+  }
+  el.innerHTML = tab(1,'Модуль 1 · Освобождение',currentStream===1) + tab(2,'Модуль 2 · Форма и интеграция',currentStream===2);
+}
+var pendingBuy = null; // отложенная покупка после входа (для ссылок ?buy=...)
+
+// Запоминаем намерение купить в localStorage — чтобы оно пережило подтверждение
+// email и любые переходы, и оплата возобновилась сразу после входа.
+function setPendingBuy(t) {
+  pendingBuy = t;
+  try { localStorage.setItem('sc_pendingBuy', t); } catch (e) {}
+}
+async function consumePendingBuy() {
+  var b = pendingBuy;
+  if (!b) { try { b = localStorage.getItem('sc_pendingBuy'); } catch (e) {} }
+  if (b && ['solo','guided','utro','potok2_solo','potok2_guided'].indexOf(b) !== -1 && currentUser) {
+    pendingBuy = null;
+    try { localStorage.removeItem('sc_pendingBuy'); } catch (e) {}
+    await payTariff(b);      // уводит на страницу оплаты банка
+    return true;
+  }
+  return false;
+}
+
+async function getAccessToken() {
+  const { data } = await supabaseClient.auth.getSession();
+  return data.session ? data.session.access_token : null;
+}
+async function refreshAccess() {
+  if (!currentUser) { hasAccess = false; hasAccess2 = false; return; }
+  const a1 = await supabaseClient.rpc('has_active_access');
+  hasAccess = !a1.error && a1.data === true;
+  const a2 = await supabaseClient.rpc('has_active_access_potok2');
+  hasAccess2 = !a2.error && a2.data === true;
+}
+async function afterAuth() {
+  const { data } = await supabaseClient.auth.getUser();
+  const u = data.user;
+  currentUser = { id: u.id, email: u.email, name: (u.user_metadata && u.user_metadata.name) || u.email };
+  localStorage.setItem('sc_user', JSON.stringify(currentUser));
+  closeModal('register'); closeModal('login');
+  await refreshAccess();
+  if (await consumePendingBuy()) return;   // возобновляем отложенную покупку → уходим на оплату
+  await loadProgressFromSupabase();
+  showDashboard();
+}
+
+async function applyPromo() {
+  if (!currentUser) { alert('Сначала войдите или зарегистрируйтесь'); openModal('register'); return; }
+  const code = (document.getElementById('promo-input').value || '').trim();
+  const msg = document.getElementById('promo-msg');
+  if (!code) { msg.style.color='var(--mid)'; msg.textContent='Введите промокод'; return; }
+  const token = await getAccessToken();
+  if (!token) { openModal('login'); return; }
+  msg.style.color='var(--mid)'; msg.textContent='Проверяем...';
+  try {
+    const r = await fetch('/.netlify/functions/redeem-promo', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ code: code, accessToken: token }) });
+    const data = await r.json().catch(function(){ return {}; });
+    if (r.ok && data.ok) { msg.style.color='var(--green)'; msg.textContent='Промокод принят! Открываем доступ...'; await refreshAccess(); renderLessons(); }
+    else { msg.style.color='#c0392b'; msg.textContent = data.error || 'Промокод недействителен'; }
+  } catch (e) { msg.style.color='#c0392b'; msg.textContent='Ошибка соединения. Попробуйте ещё раз.'; }
+}
+
+async function payTariff(tariff) {
+  if (!currentUser) { alert('Сначала войдите или зарегистрируйтесь — доступ привяжется к вашему аккаунту'); openModal('register'); return; }
+  const token = await getAccessToken();
+  if (!token) { openModal('login'); return; }
+  try {
+    const r = await fetch('/.netlify/functions/create-payment', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tariff: tariff, accessToken: token })
+    });
+    if (!r.ok) { alert('Не удалось создать оплату. Попробуйте позже.'); return; }
+    const data = await r.json();
+    if (data.paymentUrl) { window.location.href = data.paymentUrl; }
+    else { alert('Не удалось получить ссылку на оплату.'); }
+  } catch (e) { alert('Ошибка соединения. Попробуйте ещё раз.'); }
+}
+
+async function register() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass = document.getElementById('reg-pass').value;
+  if (!name || !email || !pass) { alert('Заполните имя, email и пароль'); return; }
+  if (pass.length < 6) { alert('Пароль не короче 6 символов'); return; }
+  const btn = document.querySelector('#modal-register .modal-btn');
+  btn.disabled = true; btn.textContent = 'Создаём аккаунт...';
+  const { data, error } = await supabaseClient.auth.signUp({ email: email, password: pass, options: { data: { name: name, marketing_consent: (document.getElementById('reg-consent') ? document.getElementById('reg-consent').checked : false) } } });
+  btn.disabled = false; btn.textContent = 'Создать аккаунт';
+  if (error) { alert(error.message || 'Не удалось создать аккаунт'); return; }
+  if (!data.session) { alert('Аккаунт создан. Подтвердите email по ссылке в письме, затем войдите.'); switchModal(); return; }
+  await afterAuth();
+}
+
+async function login() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  if (!email || !pass) { alert('Введите email и пароль'); return; }
+  const btn = document.querySelector('#modal-login .modal-btn');
+  btn.disabled = true; btn.textContent = 'Входим...';
+  const { error } = await supabaseClient.auth.signInWithPassword({ email: email, password: pass });
+  btn.disabled = false; btn.textContent = 'Войти';
+  if (error) { alert('Неверный email или пароль'); return; }
+  await afterAuth();
+}
+
+async function forgotPassword() {
+  const email = (document.getElementById('login-email').value || '').trim();
+  const msg = document.getElementById('reset-msg');
+  if (!email) { msg.style.color = '#c0392b'; msg.textContent = 'Введите email выше — пришлём ссылку для сброса пароля'; return; }
+  msg.style.color = 'var(--mid)'; msg.textContent = 'Отправляем ссылку...';
+  try {
+    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: location.origin + '/reset.html' });
+    if (error) { msg.style.color = '#c0392b'; msg.textContent = 'Не удалось отправить письмо. Проверьте email и попробуйте снова.'; }
+    else { msg.style.color = 'var(--green)'; msg.textContent = 'Письмо со ссылкой отправлено. Проверьте почту (в т.ч. «Спам»).'; }
+  } catch (e) { msg.style.color = '#c0392b'; msg.textContent = 'Ошибка соединения. Попробуйте ещё раз.'; }
+}
+
+async function logout() {
+  await supabaseClient.auth.signOut();
+  currentUser = null; hasAccess = false;
+  localStorage.removeItem('sc_user');
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('landing').style.display = 'block';
+}
+
+async function showDashboard() {
+  document.getElementById('landing').style.display = 'none';
+  document.getElementById('lesson-view').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('user-greeting').textContent = 'Привет, ' + currentUser.name + '!';
+  await refreshAccess();
+  if (currentUser && currentUser.id) await loadProgressFromSupabase();
+  if (!window.__streamChosen) { if (!hasAccess && hasAccess2) currentStream = 2; window.__streamChosen = true; }
+  renderStreamTabs();
+  renderLessons();
+}
+
+function goHome() {
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('lesson-view').style.display = 'none';
+  document.getElementById('landing').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+function renderLessons() {
+  const progress = getProgress();
+  const completed = progress.completed;
+  const L = streamLessons();
+  const grid = document.getElementById('lessons-grid');
+  grid.innerHTML = '';
+  if (!streamAccess()) {
+    document.getElementById('progress-bar').style.width = '0%';
+    document.getElementById('progress-text').textContent = 'Откройте доступ к программе 🌿';
+    const t1 = currentStream === 2 ? 'potok2_solo' : 'solo';
+    const t2 = currentStream === 2 ? 'potok2_guided' : 'guided';
+    const promoBlock = true ?
+      '<div style="margin-top:22px; padding-top:18px; border-top:1px solid var(--border)">' +
+        '<div style="font-size:14px; color:var(--mid); margin-bottom:10px">Есть промокод?</div>' +
+        '<input id="promo-input" placeholder="Введите код" style="padding:11px 13px; border:1px solid var(--border); border-radius:10px; font-size:15px; width:160px"> ' +
+        '<button class="btn-primary" style="margin:4px" onclick="applyPromo()">Применить</button>' +
+        '<div id="promo-msg" style="margin-top:10px; font-size:14px; color:var(--mid)"></div>' +
+      '</div>' : '';
+    const box = document.createElement('div');
+    box.className = 'lesson-item';
+    box.style.cssText = 'grid-column:1/-1; text-align:center; cursor:default; opacity:1';
+    box.innerHTML = '<h3>Доступ к урокам ' + (currentStream === 2 ? 'Модуля 2' : 'Модуля 1') + ' пока закрыт</h3>' +
+      '<div class="lesson-desc" style="margin:8px 0 16px">Оформите подписку — и все занятия откроются.</div>' +
+      '<button class="btn-primary" style="margin:4px" onclick="payTariff(\'' + t1 + '\')">Оформить за 1 800 ₽</button> ' +
+      '<button class="btn-primary" style="margin:4px" onclick="payTariff(\'' + t2 + '\')">С сопровождением — 10 000 ₽</button>' +
+      promoBlock;
+    grid.appendChild(box);
+    return;
+  }
+  const doneInStream = completed.filter(function(id){ return L.some(function(l){ return l.id === id; }); }).length;
+  const pct = Math.round((doneInStream / L.length) * 100);
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-text').textContent =
+    doneInStream === 0 ? 'Начните с вступительного урока 🌿' :
+    doneInStream === L.length ? 'Программа пройдена! Поздравляем 🎉' :
+    'Пройдено ' + doneInStream + ' из ' + L.length + ' уроков';
+  L.forEach(function(lesson, idx) {
+    const isDone = completed.includes(lesson.id);
+    const isUnlocked = idx === 0 || completed.includes(L[idx-1].id);
+    const typeStyle = lesson.type === 'body' ? 'background:var(--green-light);color:var(--green)' : 'background:var(--terra-light);color:var(--terra)';
+    const div = document.createElement('div');
+    div.className = 'lesson-item' + (isDone?' completed':'') + (isUnlocked&&!isDone?' current':'') + (!isUnlocked?' locked':'');
+    div.innerHTML =
+      '<div class="lesson-meta">' +
+        '<span class="lesson-status">' + (isDone?'✅':isUnlocked?'▶️':'🔒') + '</span>' +
+        '<span class="lesson-type-tag" style="' + typeStyle + '">' + lesson.typeLabel + '</span>' +
+      '</div>' +
+      '<h3>' + lesson.title + '</h3>' +
+      '<div class="lesson-subtitle">' + lesson.subtitle + '</div>' +
+      '<div class="lesson-desc">' + lesson.description + '</div>';
+    if (isUnlocked) div.onclick = function(){ openLesson(lesson.id); };
+    grid.appendChild(div);
+  });
+}
+
+function openLesson(id) {
+  if (!streamAccess()) { alert('Доступ к урокам закрыт. Оформите подписку.'); return; }
+  window.__lessonOpenedAt = Date.now();
+  const lesson = streamLessons().find(function(l){ return l.id === id; });
+  currentLessonId = id;
+  const isDone = getProgress().completed.includes(id);
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('lesson-view').style.display = 'block';
+  document.getElementById('lesson-view-title').textContent = lesson.title;
+  const vw = document.getElementById('lesson-video-wrap');
+  const tb = document.getElementById('lesson-theory');
+  if (lesson.hasVideo) {
+    vw.style.display = 'block'; tb.style.display = 'none';
+    document.getElementById('lesson-iframe').src = 'https://drive.google.com/file/d/' + lesson.driveId + '/preview';
+  } else {
+    vw.style.display = 'none'; tb.style.display = 'block';
+    tb.innerHTML = lesson.theory;
+  }
+  document.getElementById('comment-success').style.display = 'none';
+  document.getElementById('comment-text').value = '';
+  document.querySelector('.comment-btn').style.display = 'inline-block';
+  document.getElementById('comment-section').style.display = isDone ? 'none' : 'block';
+  document.getElementById('completed-msg').style.display = isDone ? 'block' : 'none';
+}
+
+async function submitComment() {
+  const text = document.getElementById('comment-text').value.trim();
+  if (!text) { alert('Напишите ваш отклик'); return; }
+  var __wc = text.split(/\s+/).filter(function(w){ return w.length >= 2; }).length;
+  var __letters = (text.match(/[a-zа-яё]/gi) || []).length;
+  if (text.length < 25 || __wc < 4 || __letters < 15) { alert('Опишите свои ощущения чуть подробнее — хотя бы пару предложений: что почувствовали, что заметили в теле.'); return; }
+  var __lsn = streamLessons().find(function(l){ return l.id === currentLessonId; });
+  var __reqMs = (__lsn && __lsn.hasVideo === false) ? 0 : 900000;
+  if (__reqMs > 0 && window.__lessonOpenedAt && (Date.now() - window.__lessonOpenedAt) < __reqMs) { alert('Пройдите урок до конца, прежде чем оставить отклик. Практика идёт около 15–20 минут 🌿'); return; }
+  if (!currentUser || !currentUser.id) { alert('Войдите в аккаунт'); return; }
+  const btn = document.querySelector('.comment-btn');
+  btn.disabled = true; btn.textContent = 'Отправляем...';
+  const lesson = streamLessons().find(function(l){ return l.id === currentLessonId; });
+  const msg = '🌿 Новый отклик — SOMA CLUB\n\n👤 ' + currentUser.name + '\n📧 ' + currentUser.email + '\n📚 ' + lesson.title + '\n🏷 ' + lesson.typeLabel + '\n\n💬 ' + text;
+  fetch('/.netlify/functions/notify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: msg }) }).catch(function(){});
+  const p = getProgress();
+  const alreadyDone = p.completed.includes(currentLessonId);
+  if (!alreadyDone) {
+    const { error } = await supabaseClient.from('progress').insert({ user_id: currentUser.id, lesson_id: currentLessonId, comment: text });
+    if (error) { console.error(error); btn.disabled = false; btn.textContent = 'Отправить отклик →'; alert('Не удалось сохранить отклик. Попробуйте ещё раз.'); return; }
+    p.completed.push(currentLessonId); saveProgress(p);
+  }
+  btn.disabled = false; btn.textContent = 'Отправить отклик →';
+  document.getElementById('comment-success').style.display = 'block';
+  btn.style.display = 'none';
+  setTimeout(function(){ backToDashboard(); }, 2000);
+}
+
+var BUY_LABELS = {
+  solo:'СОМА КЛУБ · Соло',
+  guided:'СОМА КЛУБ · С сопровождением',
+  utro:'СОМА УТРО',
+  potok2_solo:'СОМА КЛУБ · Модуль 2 · Соло',
+  potok2_guided:'СОМА КЛУБ · Модуль 2 · Сопровождение'
+};
+function prepBuyContext(buy){
+  var label = BUY_LABELS[buy] || 'СОМА КЛУБ';
+  var isUtro = (buy === 'utro');
+  var cover = document.getElementById('buy-cover');
+  if (cover){
+    var t = document.getElementById('bc-title'); if (t) t.textContent = label;
+    var back = document.getElementById('bc-back');
+    if (back){ back.href = isUtro ? '/utro.html' : '/'; back.textContent = isUtro ? '← Вернуться на страницу СОМА УТРО' : '← Вернуться на главную'; }
+    cover.style.display = 'flex';
+  }
+  var rh = document.querySelector('#modal-register .modal h2'); if (rh) rh.textContent = 'Оформление · ' + label;
+  var rp = document.querySelector('#modal-register .modal > p'); if (rp) rp.textContent = 'Быстрая регистрация — доступ привяжется к вашей почте, дальше перейдём к оплате.';
+  var lh = document.querySelector('#modal-login .modal h2'); if (lh) lh.textContent = 'Вход · ' + label;
+  var lp = document.querySelector('#modal-login .modal > p'); if (lp) lp.textContent = 'Войдите — и продолжим оформление.';
+}
+
+window.onload = async function() {
+  const params = new URLSearchParams(location.search);
+  const { data: sess } = await supabaseClient.auth.getSession();
+  if (sess.session) {
+    const { data: u } = await supabaseClient.auth.getUser();
+    const user = u.user;
+    currentUser = { id: user.id, email: user.email, name: (user.user_metadata && user.user_metadata.name) || user.email };
+    localStorage.setItem('sc_user', JSON.stringify(currentUser));
+  }
+  // Покупка по ссылке ?buy=... (например, со страницы СОМА УТРО).
+  const buy = params.get('buy');
+  if (buy && ['solo','guided','utro','potok2_solo','potok2_guided'].indexOf(buy) !== -1) {
+    if (currentUser) { setPendingBuy(buy); await consumePendingBuy(); return; }
+    prepBuyContext(buy);
+    setPendingBuy(buy); openModal('register'); return;
+  }
+  if (sess.session) {
+    await refreshAccess();
+    if (await consumePendingBuy()) return;   // возобновляем покупку после подтверждения email
+    if (params.get('paid') === '1' && !hasAccess) {
+      for (let i = 0; i < 6 && !hasAccess; i++) {
+        await new Promise(function(r){ setTimeout(r, 2000); });
+        await refreshAccess();
+      }
+    }
+    await loadProgressFromSupabase();
+    showDashboard();
+  }
+};
+</script>
+</body>
+</html>

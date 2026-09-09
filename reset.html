@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Сброс пароля · СОМА КЛУБ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="/vendor/supabase.min.js"></script>
+<style>
+  :root{--cream:#F6F1E8;--ink:#3B322B;--muted:#8A7C6E;--brown:#7A5B44;--brown2:#6A4E3B;--line:#E2D8C8;--gold:#B8946A;--green:#3f8f5f;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;line-height:1.6;font-weight:300}
+  .card{background:#fff;border:1px solid var(--line);border-radius:20px;max-width:420px;width:100%;padding:36px 30px;box-shadow:0 24px 60px rgba(90,66,45,.14)}
+  .logo{font-family:'Playfair Display',serif;font-size:22px;letter-spacing:2px;text-align:center;margin-bottom:4px}
+  .logo b{color:var(--gold)}
+  h1{font-family:'Playfair Display',serif;font-weight:500;font-size:24px;text-align:center;margin:14px 0 6px}
+  p.sub{color:var(--muted);font-size:14px;text-align:center;margin-bottom:22px}
+  input{width:100%;padding:14px 16px;border:1px solid var(--line);border-radius:12px;font-size:15px;margin-bottom:12px;font-family:'Montserrat',sans-serif}
+  button{width:100%;background:var(--brown);color:#fff;border:none;padding:15px;border-radius:30px;font-size:14px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'Montserrat',sans-serif}
+  button:hover{background:var(--brown2)}
+  button:disabled{opacity:.6;cursor:default}
+  .msg{text-align:center;font-size:14px;margin-top:14px}
+  .hide{display:none}
+  a.link{display:inline-block;margin-top:16px;color:var(--brown);font-size:14px;text-decoration:none;border-bottom:1px solid var(--line)}
+  .center{text-align:center}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">СОМА <b>КЛУБ</b></div>
+
+  <div id="loading" class="center"><p class="sub" style="margin-top:16px">Проверяем ссылку…</p></div>
+
+  <div id="form-box" class="hide">
+    <h1>Новый пароль</h1>
+    <p class="sub">Придумайте новый пароль для входа.</p>
+    <input id="p1" type="password" placeholder="Новый пароль (от 6 символов)" autocomplete="new-password">
+    <input id="p2" type="password" placeholder="Повторите пароль" autocomplete="new-password">
+    <button id="save" onclick="savePass()">Сохранить пароль</button>
+    <p id="msg" class="msg"></p>
+  </div>
+
+  <div id="ok-box" class="hide center">
+    <h1>Пароль обновлён 🌿</h1>
+    <p class="sub">Теперь можно войти с новым паролем.</p>
+    <a class="link" href="/utro.html">Вернуться на сайт →</a>
+  </div>
+
+  <div id="err-box" class="hide center">
+    <h1>Ссылка недействительна</h1>
+    <p class="sub">Похоже, ссылка устарела или уже использована. Запросите сброс пароля ещё раз на странице входа.</p>
+    <a class="link" href="/utro.html">На страницу входа →</a>
+  </div>
+</div>
+
+<script>
+  var SB_URL=location.origin + '/sb';
+  var SB_KEY='sb_publishable_QRv4hYsSpQyXJazl8hgZwQ_TFYLu9ZU';
+  var sb = window.supabase.createClient(SB_URL, SB_KEY);
+  var ready=false;
+
+  function show(id){
+    ['loading','form-box','ok-box','err-box'].forEach(function(x){
+      document.getElementById(x).classList.toggle('hide', x!==id);
+    });
+  }
+
+  sb.auth.onAuthStateChange(function(event, session){
+    if (!ready && (event === 'PASSWORD_RECOVERY' || session)) { ready=true; show('form-box'); }
+  });
+
+  window.savePass = async function(){
+    var p1=document.getElementById('p1').value, p2=document.getElementById('p2').value;
+    var msg=document.getElementById('msg');
+    if(p1.length<6){ msg.style.color='#c0392b'; msg.textContent='Пароль не короче 6 символов'; return; }
+    if(p1!==p2){ msg.style.color='#c0392b'; msg.textContent='Пароли не совпадают'; return; }
+    var btn=document.getElementById('save'); btn.disabled=true; btn.textContent='Сохраняем…';
+    try{
+      var res=await sb.auth.updateUser({ password:p1 });
+      if(res.error){ btn.disabled=false; btn.textContent='Сохранить пароль'; msg.style.color='#c0392b'; msg.textContent=(res.error.message||'Не удалось сохранить. Возможно, ссылка устарела.'); return; }
+      show('ok-box');
+    }catch(e){ btn.disabled=false; btn.textContent='Сохранить пароль'; msg.style.color='#c0392b'; msg.textContent='Ошибка соединения. Попробуйте ещё раз.'; }
+  };
+
+  // Обработка ссылки из письма: ждём, пока Supabase установит сессию восстановления.
+  (function(){
+    var h = location.hash || '';
+    if (h.indexOf('error') !== -1) { show('err-box'); return; }
+    var tries=0;
+    (async function poll(){
+      if (ready) return;
+      var r = await sb.auth.getSession();
+      if (r.data && r.data.session){ ready=true; show('form-box'); return; }
+      if (++tries >= 12){ show('err-box'); return; }
+      setTimeout(poll, 400);
+    })();
+  })();
+</script>
+</body>
+</html>

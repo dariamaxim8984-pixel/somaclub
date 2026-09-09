@@ -1,0 +1,5 @@
+# Caddy сам получит и продлит сертификат Let's Encrypt для домена.
+somaclub.ru, www.somaclub.ru {
+    encode zstd gzip
+    reverse_proxy 127.0.0.1:8080
+}

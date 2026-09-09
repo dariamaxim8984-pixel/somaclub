@@ -1,0 +1,12 @@
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Брошенная корзина — раз в день в 09:00 UTC (12:00 МСК).
+[functions."abandoned-cart"]
+  schedule = "0 9 * * *"
+
+# СОМА УТРО — проверка подписок: удаление просроченных + напоминания.
+# Раз в день в 06:00 UTC (09:00 МСК).
+[functions."utro-expire"]
+  schedule = "0 6 * * *"
