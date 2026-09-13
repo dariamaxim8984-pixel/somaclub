@@ -1,6 +1,7 @@
 // SOMA CLUB — активация промокода на бесплатный доступ (30 дней).  [v2 + welcome]
 // Переменные окружения: SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY
 
+const crypto = require('crypto');
 const { sendWelcome } = require('./_email');
 
 const DAYS = 30;
@@ -53,6 +54,9 @@ exports.handler = async (event) => {
   const grantTariff = promo.tariff || 'solo';
 
   // 3) Выдаём доступ: подтверждённый заказ на 30 дней, сумма 0.
+  // Для СОМА УТРО генерируем персональный токен для входа в Telegram-бота
+  // (как при обычной оплате) — иначе бот не найдёт заказ по /start.
+  const tgToken = crypto.randomBytes(24).toString('hex');
   const paidUntil = new Date(Date.now() + DAYS * 24 * 60 * 60 * 1000).toISOString();
   const orderId = `promo-${code}-${user.id.slice(0, 8)}-${Date.now()}`;
   try {
@@ -67,7 +71,7 @@ exports.handler = async (event) => {
       body: JSON.stringify({
         order_id: orderId, user_id: user.id, email: user.email,
         tariff: grantTariff, amount: 0, status: 'confirmed',
-        payment_id: 'promo:' + code, paid_until: paidUntil
+        payment_id: 'promo:' + code, paid_until: paidUntil, tg_token: tgToken
       })
     });
     if (!ins.ok) return json(500, { error: 'Не удалось выдать доступ' });
@@ -77,5 +81,6 @@ exports.handler = async (event) => {
   console.log('[promo] v2: доступ выдан (%s), шлём welcome -> %s', grantTariff, user.email);
   await sendWelcome(user.email, grantTariff);
 
-  return json(200, { ok: true });
+  // Для утро возвращаем токен, чтобы фронт показал ссылку-вход в бота.
+  return json(200, { ok: true, tariff: grantTariff, tgToken: (grantTariff === 'utro' ? tgToken : null) });
 };
