@@ -1,10 +1,37 @@
 // SOMA CLUB — серверная отправка отклика в Telegram.
-// Токен и chat_id берутся из переменных окружения Netlify.
+// Токен и chat_id берутся из переменных окружения:
 //   BOT_TOKEN, CHAT_ID
+//
+// Важно: российский хостинг (Timeweb) не может достучаться до api.telegram.org.
+// Поэтому если функция выполняется НЕ на Netlify — она пересылает запрос на
+// Netlify-копию (somaclub.netlify.app), а та уже отправляет сообщение в Telegram.
+// Заголовок x-soma-forward защищает от зацикливания.
+const FORWARD_URL = 'https://somaclub.netlify.app/.netlify/functions/notify';
+
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
+
+  const headers = event.headers || {};
+  const alreadyForwarded = (headers['x-soma-forward'] || headers['X-Soma-Forward']) === '1';
+  const onNetlify = !!process.env.NETLIFY;
+
+  // Не на Netlify и запрос ещё не переслан — пересылаем на Netlify.
+  if (!onNetlify && !alreadyForwarded) {
+    try {
+      const resp = await fetch(FORWARD_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-soma-forward': '1' },
+        body: event.body || '{}'
+      });
+      return { statusCode: resp.ok ? 200 : 502, body: resp.ok ? JSON.stringify({ ok: true }) : 'Forward failed' };
+    } catch (e) {
+      return { statusCode: 502, body: 'Forward error' };
+    }
+  }
+
+  // На Netlify (или это уже пересланный запрос) — шлём напрямую в Telegram.
   const BOT_TOKEN = process.env.BOT_TOKEN;
   const CHAT_ID = process.env.CHAT_ID;
   if (!BOT_TOKEN || !CHAT_ID) {
