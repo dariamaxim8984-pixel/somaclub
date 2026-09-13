@@ -141,8 +141,56 @@ function scheduleDailyUTC(hh, mm, fn, label) {
   plan();
 }
 
+// --- Telegram polling ---
+// На РФ-хостинге серверы Telegram не достукиваются до российского IP по вебхуку
+// ("Connection timed out"), поэтому опрашиваем Telegram сами исходящими запросами
+// (getUpdates). Бизнес-логику берём из того же telegram-bot.js — просто вызываем его
+// обработчик с сформированным event и корректным секретным заголовком.
+async function tgApi(method, params) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const r = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params || {})
+  });
+  return r.json();
+}
+async function startTelegramPolling() {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const handler = HANDLERS['telegram-bot'];
+  const secret = process.env.TG_WEBHOOK_SECRET;
+  if (!token || !handler) { console.error('[poll] отключён: нет TELEGRAM_BOT_TOKEN или обработчика'); return; }
+  // Снимаем вебхук — иначе getUpdates отдаёт 409 Conflict. Накопленные апдейты сохраняем.
+  try { await tgApi('deleteWebhook', { drop_pending_updates: false }); console.log('[poll] вебхук снят, включаю getUpdates'); }
+  catch (e) { console.error('[poll] deleteWebhook error', e && e.message); }
+  let offset = 0;
+  const loop = async () => {
+    try {
+      const res = await tgApi('getUpdates', { offset, timeout: 50, allowed_updates: ['message', 'edited_message'] });
+      if (res && res.ok && Array.isArray(res.result)) {
+        for (const upd of res.result) {
+          offset = upd.update_id + 1;
+          try {
+            await handler({
+              httpMethod: 'POST',
+              headers: secret ? { 'x-telegram-bot-api-secret-token': secret } : {},
+              body: JSON.stringify(upd),
+              queryStringParameters: {}
+            }, {});
+          } catch (e) { console.error('[poll] handler error', e && e.message); }
+        }
+      } else if (res && res.ok === false) {
+        console.error('[poll] getUpdates ответил', res.error_code, res.description);
+        await new Promise((r) => setTimeout(r, 3000));
+      }
+    } catch (e) { console.error('[poll] getUpdates error', e && e.message); await new Promise((r) => setTimeout(r, 3000)); }
+    setImmediate(loop);
+  };
+  console.log('[poll] Telegram polling запущен');
+  loop();
+}
+
 vendorEnsure().finally(() => {
   if (HANDLERS['utro-expire']) scheduleDailyUTC(6, 0, HANDLERS['utro-expire'], 'utro-expire');
   if (HANDLERS['abandoned-cart']) scheduleDailyUTC(9, 0, HANDLERS['abandoned-cart'], 'abandoned-cart');
   server.listen(PORT, () => console.log('SOMA server слушает :' + PORT));
+  startTelegramPolling();
 });
