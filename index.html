@@ -1145,7 +1145,14 @@ async function applyPromo() {
   try {
     const r = await fetch('/.netlify/functions/redeem-promo', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ code: code, accessToken: token }) });
     const data = await r.json().catch(function(){ return {}; });
-    if (r.ok && data.ok) { msg.style.color='var(--green)'; msg.textContent='Промокод принят! Открываем доступ...'; await refreshAccess(); renderLessons(); }
+    if (r.ok && data.ok) {
+      if (data.tariff === 'utro' && data.tgToken) {
+        msg.style.color='var(--green)'; msg.textContent='Промокод принят! Переходим ко входу в клуб...';
+        window.location.href = '/utro.html?paid=1&t=' + encodeURIComponent(data.tgToken);
+        return;
+      }
+      msg.style.color='var(--green)'; msg.textContent='Промокод принят! Открываем доступ...'; await refreshAccess(); renderLessons();
+    }
     else { msg.style.color='#c0392b'; msg.textContent = data.error || 'Промокод недействителен'; }
   } catch (e) { msg.style.color='#c0392b'; msg.textContent='Ошибка соединения. Попробуйте ещё раз.'; }
 }

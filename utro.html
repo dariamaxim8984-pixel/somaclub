@@ -244,6 +244,12 @@
           <li><span class="y">✓</span> Взаимная поддержка</li>
         </ul>
         <a href="#" onclick="startBuy();return false;" class="btn solid">Хочу в поток</a>
+        <div style="margin-top:18px;padding-top:16px;border-top:1px solid rgba(0,0,0,.08)">
+          <div style="font-size:14px;color:var(--muted);margin-bottom:8px">Есть промокод?</div>
+          <input id="u-promo-input" placeholder="Введите код" style="padding:10px 12px;border:1px solid #d9cfc4;border-radius:10px;font-size:15px;width:160px">
+          <button class="btn solid" onclick="applyUtroPromo();return false;" style="margin-top:8px">Применить</button>
+          <div id="u-promo-msg" style="margin-top:10px;font-size:14px;color:var(--muted)"></div>
+        </div>
       </div>
     </div>
     <p class="note">При оплате внимательно проверьте адрес электронной почты — доступ придёт на него.</p>
@@ -360,6 +366,29 @@
       else { alert('Не удалось получить ссылку на оплату.'); }
     }catch(e){ alert('Ошибка соединения. Попробуйте ещё раз.'); }
   }
+
+  window.applyUtroPromo = async function(){
+    var code=(document.getElementById('u-promo-input').value||'').trim();
+    var msg=document.getElementById('u-promo-msg');
+    if(!code){ msg.style.color='#c0392b'; msg.textContent='Введите промокод'; return; }
+    var token = await uToken();
+    if(!token){ msg.style.color='#8A7C6E'; msg.textContent='Сначала войдите или зарегистрируйтесь, затем введите код снова'; uOpen('u-register'); return; }
+    msg.style.color='#8A7C6E'; msg.textContent='Проверяем...';
+    try{
+      var r = await fetch('/.netlify/functions/redeem-promo', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ code:code, accessToken:token }) });
+      var d = await r.json().catch(function(){ return {}; });
+      if(r.ok && d.ok){
+        if(d.tariff==='utro' && d.tgToken){
+          msg.style.color='#3f8f5f'; msg.textContent='Промокод принят! Переходим ко входу в клуб...';
+          location.href = '/utro.html?paid=1&t=' + encodeURIComponent(d.tgToken);
+          return;
+        }
+        msg.style.color='#3f8f5f'; msg.textContent='Промокод активирован. Этот код открывает доступ в основном курсе — на главной странице somaclub.ru.';
+        return;
+      }
+      msg.style.color='#c0392b'; msg.textContent = d.error || 'Промокод недействителен';
+    }catch(e){ msg.style.color='#c0392b'; msg.textContent='Ошибка соединения. Попробуйте ещё раз.'; }
+  };
 
   async function afterUAuth(){
     var u = await sb.auth.getUser();
