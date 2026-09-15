@@ -4,7 +4,7 @@
 const crypto = require('crypto');
 const { sendWelcome } = require('./_email');
 
-const DAYS = 30;
+const DEFAULT_DAYS = 30;
 const json = (code, obj) => ({
   statusCode: code,
   headers: { 'Content-Type': 'application/json' },
@@ -39,7 +39,7 @@ exports.handler = async (event) => {
   let promo;
   try {
     const q = await fetch(
-      `${SUPABASE_URL}/rest/v1/promo_codes?code=eq.${encodeURIComponent(code)}&select=code,active,valid_until,tariff`,
+      `${SUPABASE_URL}/rest/v1/promo_codes?code=eq.${encodeURIComponent(code)}&select=code,active,valid_until,tariff,days`,
       { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
     );
     const rows = await q.json();
@@ -52,12 +52,14 @@ exports.handler = async (event) => {
 
   // Какой продукт открывает код (по столбцу tariff; по умолчанию — Поток 1 «solo»).
   const grantTariff = promo.tariff || 'solo';
+  // Длительность доступа задаётся в коде (столбец days); по умолчанию 30 дней.
+  const grantDays = (promo.days && promo.days > 0) ? promo.days : DEFAULT_DAYS;
 
-  // 3) Выдаём доступ: подтверждённый заказ на 30 дней, сумма 0.
+  // 3) Выдаём доступ: подтверждённый заказ, сумма 0.
   // Для СОМА УТРО генерируем персональный токен для входа в Telegram-бота
   // (как при обычной оплате) — иначе бот не найдёт заказ по /start.
   const tgToken = crypto.randomBytes(24).toString('hex');
-  const paidUntil = new Date(Date.now() + DAYS * 24 * 60 * 60 * 1000).toISOString();
+  const paidUntil = new Date(Date.now() + grantDays * 24 * 60 * 60 * 1000).toISOString();
   const orderId = `promo-${code}-${user.id.slice(0, 8)}-${Date.now()}`;
   try {
     const ins = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
