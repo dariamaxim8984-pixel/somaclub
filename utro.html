@@ -480,5 +480,23 @@
     }
   })();
 </script>
+<script>
+  // Префилл промокода из ссылки (?promo=CODE) + прокрутка к блоку тарифа.
+  (function(){
+    try{
+      var p=new URLSearchParams(location.search).get('promo');
+      if(!p) return;
+      var fill=function(){
+        var i=document.getElementById('u-promo-input');
+        if(i){ i.value=p.toUpperCase(); }
+        var t=document.getElementById('tariffs');
+        if(t){ t.scrollIntoView({behavior:'smooth'}); }
+        if(i){ try{ i.focus(); }catch(e){} }
+      };
+      if(document.readyState!=='loading') setTimeout(fill,300);
+      else document.addEventListener('DOMContentLoaded',function(){ setTimeout(fill,300); });
+    }catch(e){}
+  })();
+</script>
 </body>
 </html>
