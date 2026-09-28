@@ -71,22 +71,24 @@ function welcomeHtml(tariff) {
 
 // Welcome для СОМА УТРО — доступ в закрытую Telegram-группу через бота.
 // token — персональный tg_token заказа; по нему бот выдаёт одноразовую ссылку в группу.
-function utroWelcomeHtml(token) {
+function utroWelcomeHtml(token, days) {
+  const d = days || 30;
+  const dWord = (d % 10 === 1 && d % 100 !== 11) ? 'день' : ([2,3,4].includes(d % 10) && ![12,13,14].includes(d % 100)) ? 'дня' : 'дней';
   const botLink = token
     ? `https://t.me/${UTRO_BOT_USERNAME}?start=${token}`
     : `https://t.me/${UTRO_BOT_USERNAME}`;
   return wrap(`
     <h1 style="font-size:22px;margin:0 0 16px">Ты в СОМА УТРО 🌿</h1>
-    <p style="margin:0 0 16px">Спасибо за доверие! Доступ открыт на <b>30 дней</b>.</p>
+    <p style="margin:0 0 16px">Спасибо за доверие! Доступ открыт на <b>${d} ${dWord}</b>.</p>
     <p style="margin:0 0 16px">Нажми кнопку — наш бот проверит оплату и пришлёт <b>личную ссылку</b> в закрытую группу. Там <b>5 дней в неделю в 7:00 по Москве</b> проходят онлайн-эфиры. Пропустила — остаётся запись.</p>
     <p style="margin:0 0 24px">${btn(botLink, 'Получить доступ в клуб')}</p>
     <p style="margin:0;color:#6b6b6b;font-size:14px">Если кнопка не открывается — вот ссылка: <a href="${botLink}" style="color:#7a9e7e">${botLink}</a><br><br>До встречи на эфире!<br>Дарья и Максим</p>
   `);
 }
 
-async function sendWelcome(to, tariff, token) {
+async function sendWelcome(to, tariff, token, days) {
   if (tariff === 'utro') {
-    return sendEmail({ to, subject: 'Ты в СОМА УТРО 🌿 — ссылка на клуб', html: utroWelcomeHtml(token) });
+    return sendEmail({ to, subject: 'Ты в СОМА УТРО 🌿 — ссылка на клуб', html: utroWelcomeHtml(token, days) });
   }
   return sendEmail({ to, subject: 'Добро пожаловать в SOMA CLUB 🌿', html: welcomeHtml(tariff) });
 }

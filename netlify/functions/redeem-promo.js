@@ -81,7 +81,7 @@ exports.handler = async (event) => {
 
   // 4) Welcome-письмо (best-effort — не влияет на выдачу доступа).
   console.log('[promo] v2: доступ выдан (%s), шлём welcome -> %s', grantTariff, user.email);
-  await sendWelcome(user.email, grantTariff);
+  await sendWelcome(user.email, grantTariff, grantTariff === 'utro' ? tgToken : undefined, grantDays);
 
   // Для утро возвращаем токен, чтобы фронт показал ссылку-вход в бота.
   return json(200, { ok: true, tariff: grantTariff, tgToken: (grantTariff === 'utro' ? tgToken : null) });
