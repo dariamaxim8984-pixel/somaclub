@@ -189,8 +189,8 @@ async function startTelegramPolling() {
 }
 
 vendorEnsure().finally(() => {
-  if (HANDLERS['utro-expire']) scheduleDailyUTC(6, 0, HANDLERS['utro-expire'], 'utro-expire');
-  if (HANDLERS['abandoned-cart']) scheduleDailyUTC(9, 0, HANDLERS['abandoned-cart'], 'abandoned-cart');
+  // if (HANDLERS['utro-expire']) scheduleDailyUTC(6, 0, HANDLERS['utro-expire'], 'utro-expire');
+  // if (HANDLERS['abandoned-cart']) scheduleDailyUTC(9, 0, HANDLERS['abandoned-cart'], 'abandoned-cart');
   server.listen(PORT, () => console.log('SOMA server слушает :' + PORT));
   startTelegramPolling();
 });
