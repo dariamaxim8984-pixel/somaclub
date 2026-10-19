@@ -8,6 +8,15 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="/vendor/supabase.min.js"></script>
+<script>
+  // Если локальная библиотека не догрузилась — пробуем CDN.
+  if (!window.supabase) { document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"><\/script>'); }
+  // Запасной обработчик: кнопка оплаты никогда не «прыгает наверх» молча.
+  window.uFallback = function(){
+    alert('Страница не догрузилась до конца. Откройте её в обычном браузере (⋯ → «Открыть в браузере») или обновите страницу и нажмите кнопку ещё раз.');
+  };
+  window.startBuy = function(){ window.uFallback(); };
+</script>
 <style>
   :root{
     --cream:#F6F1E8; --cream2:#EFE7DA; --ink:#3B322B; --muted:#8A7C6E;
@@ -335,16 +344,17 @@
 <script>
   var SB_URL=location.origin + '/sb';
   var SB_KEY='sb_publishable_QRv4hYsSpQyXJazl8hgZwQ_TFYLu9ZU';
-  var sb = window.supabase.createClient(SB_URL, SB_KEY);
+  var sb = window.supabase ? window.supabase.createClient(SB_URL, SB_KEY) : null;
   var uUser = null;
 
   function uOpen(id){ document.getElementById(id).classList.add('active'); }
   function uClose(id){ document.getElementById(id).classList.remove('active'); }
   function uSwitch(id){ uClose('u-register'); uClose('u-login'); uOpen(id); }
 
-  async function uToken(){ var r = await sb.auth.getSession(); return (r.data && r.data.session) ? r.data.session.access_token : null; }
+  async function uToken(){ if (!sb) return null; var r = await sb.auth.getSession(); return (r.data && r.data.session) ? r.data.session.access_token : null; }
 
   window.startBuy = async function(){
+    if (!sb) { return window.uFallback(); }
     if (uUser) { return payUtro(); }
     var t = await uToken();
     if (t) { uUser = uUser || {}; return payUtro(); }
