@@ -87,8 +87,18 @@ exports.handler = async (event) => {
   if (text.startsWith('/start')) {
     const token = text.split(/\s+/)[1];
 
-    // Бесплатный лид-магнит «3 дня утра».
-    if (token === 'free3') {
+    // Бесплатный лид-магнит «3 дня утра». С 29.10.2026 бесплатных недель нет:
+    // старые ссылки ?start=week тоже ведут сюда (кроме тех, кто уже в клубе — им ниже свежая ссылка в группу).
+    let isPaidForWeek = false;
+    if (token === 'week') {
+      try {
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/utro_members?telegram_user_id=eq.${fromId}&active=eq.true&select=user_id,trial_until&limit=1`, { headers: authHeaders });
+        const rows = await r.json();
+        const m = Array.isArray(rows) ? rows[0] : null;
+        isPaidForWeek = !!(m && (m.user_id || (m.trial_until && new Date(m.trial_until) > new Date())));
+      } catch (e) { console.error('[bot] week paid check', e && e.message); }
+    }
+    if (token === 'free3' || (token === 'week' && !isPaidForWeek)) {
       try {
         const free3 = require('./_free3');
         await free3.enroll(process.env, chatId, fromId, username);
@@ -174,8 +184,8 @@ exports.handler = async (event) => {
     }
 
     if (!token) {
-      await say('Привет! Это бот клуба <b>СОМА УТРО</b> 🌿\n\nЖивые утренние эфиры 5 дней в неделю в 7:00 по Москве. Первая неделя — бесплатно 👇\n\nЕсли ты уже оплатил(а) — открой персональную ссылку из письма; нет ссылки — напиши сюда, поможем.', {
-        reply_markup: { inline_keyboard: [[{ text: 'Открыть неделю бесплатно 🌿', url: 'https://t.me/soma_utro_bot?start=week' }]] }
+      await say('Привет! Это бот клуба <b>СОМА УТРО</b> 🌿\n\nЖивые утренние эфиры 5 дней в неделю в 7:00 по Москве. Начни с трёх бесплатных утр — по короткой практике каждое утро 👇\n\nЕсли ты уже оплатил(а) — открой персональную ссылку из письма; нет ссылки — напиши сюда, поможем.', {
+        reply_markup: { inline_keyboard: [[{ text: '3 утра бесплатно 🌿', url: 'https://t.me/soma_utro_bot?start=free3' }]] }
       });
       return { statusCode: 200, body: 'ok' };
     }
