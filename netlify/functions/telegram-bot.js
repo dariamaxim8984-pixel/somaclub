@@ -9,6 +9,8 @@
 //   TG_WEBHOOK_SECRET   — произвольная строка; та же передаётся в setWebhook (secret_token)
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY
 
+const free3 = require('./_free3');
+
 async function tg(token, method, params) {
   try {
     const r = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
@@ -87,10 +89,12 @@ exports.handler = async (event) => {
   if (text.startsWith('/start')) {
     const token = text.split(/\s+/)[1];
 
-    // С 29.10.2026: бесплатно — 3 живых утра в группе клуба (не неделя).
-    // ?start=free3 и старые ?start=week ведут сюда. Один раз на Telegram-аккаунт: срок в utro_members.trial_until.
-    // Считаем 3 эфирных утра (пн–пт, 7:00 МСК): сегодня, если ещё нет 7:00 и будний день, иначе с ближайшего буднего.
-    // Доступ — до 12:00 МСК третьего эфирного утра; utro-expire уберёт на следующий день.
+    // С 16.11.2026: ?start=free3 и старые ?start=week — 3 зарядки видео (_free3.js),
+    // после третьей бот зовёт на ?start=live1 — ОДНО живое утро в группе клуба, дальше оплата.
+    // Живое утро — один раз на Telegram-аккаунт: срок в utro_members.trial_until.
+    // Ближайшее эфирное утро (пн–пт, 7:00 МСК): сегодня, если ещё нет 7:00 и будний день, иначе ближайшее буднее.
+    // Доступ — до 12:00 МСК этого утра; utro-expire уберёт на следующий день.
+    const TRIAL_MORNINGS = 1;
     const trialUntilDate = () => {
       const MSK = 3 * 3600 * 1000;
       const nowMsk = new Date(Date.now() + MSK);
@@ -98,11 +102,22 @@ exports.handler = async (event) => {
       const isWeekday = (x) => x.getUTCDay() >= 1 && x.getUTCDay() <= 5;
       if (!(isWeekday(d) && nowMsk.getUTCHours() < 7)) d.setUTCDate(d.getUTCDate() + 1);
       let mornings = 0;
-      while (true) { if (isWeekday(d)) { mornings++; if (mornings === 3) break; } d.setUTCDate(d.getUTCDate() + 1); }
+      while (true) { if (isWeekday(d)) { mornings++; if (mornings === TRIAL_MORNINGS) break; } d.setUTCDate(d.getUTCDate() + 1); }
       return new Date(d.getTime() + 12 * 3600 * 1000 - MSK); // 12:00 МСК
     };
 
     if (token === 'week' || token === 'free3') {
+      const isNew = await free3.enroll(process.env, chatId, fromId, username);
+      if (isNew && process.env.OWNER_CHAT_ID) {
+        await tg(TELEGRAM_BOT_TOKEN, 'sendMessage', {
+          chat_id: process.env.OWNER_CHAT_ID,
+          text: `🌿 Новый участник «3 зарядки»: ${username || fromId}`
+        });
+      }
+      return { statusCode: 200, body: 'ok' };
+    }
+
+    if (token === 'live1') {
       const SITE = 'https://somaclub.ru';
       let m = null;
       try {
@@ -117,7 +132,7 @@ exports.handler = async (event) => {
       const trialActive = trialEnd && trialEnd.getTime() > now;
 
       if (!paidMember && trialEnd && !trialActive) {
-        await say('Бесплатные утра у тебя уже были 🌿\n\nЧтобы вернуться в утренние эфиры — продли доступ: 1490 ₽ в месяц, 5 живых утр в неделю в 7:00 по Москве.', {
+        await say('Бесплатное живое утро у тебя уже было 🌿\n\nЧтобы вернуться в утренние эфиры — продли доступ: 1490 ₽ в месяц, 5 живых утр в неделю в 7:00 по Москве.', {
           reply_markup: { inline_keyboard: [[{ text: 'Продолжить в клубе', url: `${SITE}/utro.html` }]] }
         });
         return { statusCode: 200, body: 'ok' };
@@ -154,9 +169,9 @@ exports.handler = async (event) => {
         await say(
           paidMember
             ? 'Ты уже в клубе <b>СОМА УТРО</b> ✅ Вот свежая ссылка в группу 👇'
-            : `Три утра в клубе <b>СОМА УТРО</b> открыты ✅\nТы с нами до ${till} — это три живых эфира.\n\n` +
-              'Каждое будничное утро в 7:00 по Москве мы с Дашей выходим в эфир: движение, танец, дыхание. 15–20 минут.\n' +
-              'В группе — люди, которые встают вместе с тобой. Напиши там «привет» — мы тебя встретим 🙌\n' +
+            : `Живое утро открыто ✅ Ждём тебя ${till} в 7:00 по Москве.\n\n` +
+              'Мы с Дашей выходим в эфир прямо в группе: движение, танец, дыхание, 15–20 минут.\n' +
+              'Напиши там «привет» — мы тебя встретим 🙌\n' +
               'Не получилось в эфир — запись остаётся в группе.\n\n' +
               'Жми, чтобы войти 👇',
           { reply_markup: { inline_keyboard: [[{ text: 'Войти в группу', url: invite }]] } }
@@ -169,15 +184,15 @@ exports.handler = async (event) => {
       if (isNew && process.env.OWNER_CHAT_ID) {
         await tg(TELEGRAM_BOT_TOKEN, 'sendMessage', {
           chat_id: process.env.OWNER_CHAT_ID,
-          text: `🌿 Новый участник на 3 утра в клубе: ${username || fromId} (до ${till}). Встретьте в группе по имени 🙌`
+          text: `🌿 Новый участник на живое утро: ${username || fromId} (утро ${till}). Встретьте в группе по имени 🙌`
         });
       }
       return { statusCode: 200, body: 'ok' };
     }
 
     if (!token) {
-      await say('Привет! Это бот клуба <b>СОМА УТРО</b> 🌿\n\nЖивые утренние эфиры 5 дней в неделю в 7:00 по Москве. Начни с трёх бесплатных живых утр в клубе — вместе с нами и группой 👇\n\nЕсли ты уже оплатил(а) — открой персональную ссылку из письма; нет ссылки — напиши сюда, поможем.', {
-        reply_markup: { inline_keyboard: [[{ text: '3 утра в клубе бесплатно 🌿', url: 'https://t.me/soma_utro_bot?start=free3' }]] }
+      await say('Привет! Это бот клуба <b>СОМА УТРО</b> 🌿\n\nЖивые утренние эфиры 5 дней в неделю в 7:00 по Москве. Начни с трёх бесплатных зарядок — по одной в день, 10–15 минут 👇\n\nЕсли ты уже оплатил(а) — открой персональную ссылку из письма; нет ссылки — напиши сюда, поможем.', {
+        reply_markup: { inline_keyboard: [[{ text: '3 зарядки бесплатно 🌿', url: 'https://t.me/soma_utro_bot?start=free3' }]] }
       });
       return { statusCode: 200, body: 'ok' };
     }
@@ -263,7 +278,7 @@ exports.handler = async (event) => {
   // пересылаем Даше в личку
   if (OWNER_CHAT_ID) {
     const who = username || ('id ' + fromId);
-    const tag = isFree3 ? '🌿 Отзыв (3 дня)' : '✉️ Сообщение боту';
+    const tag = isFree3 ? '🌿 Отзыв (3 зарядки)' : '✉️ Сообщение боту';
     await tg(TELEGRAM_BOT_TOKEN, 'sendMessage', {
       chat_id: OWNER_CHAT_ID,
       text: `${tag}\nОт: ${who}\n\n${text}`,
@@ -275,7 +290,7 @@ exports.handler = async (event) => {
   if (isFree3) {
     const hide = { reply_markup: { remove_keyboard: true } }; // убираем кнопки быстрых ответов дня 4
     if (/не успел/i.test(text)) {
-      await say('Ничего страшного 🌿 Все три практики остаются в этом чате выше — сделай любую завтра утром, до телефона и кофе. Расскажешь, как прошло?', hide);
+      await say('Ничего страшного 🌿 Все зарядки остаются в этом чате выше — сделай любую завтра утром, до телефона и кофе. Расскажешь, как прошло?', hide);
     } else {
       await say(free3Day >= 3
         ? 'Спасибо, что делишься 🌿 Мы с Дашей читаем каждое сообщение — это для нас очень ценно.'

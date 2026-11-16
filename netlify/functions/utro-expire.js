@@ -84,7 +84,7 @@ exports.handler = async () => {
       await tg(TELEGRAM_BOT_TOKEN, 'sendMessage', {
         chat_id: m.telegram_user_id, parse_mode: 'HTML', disable_web_page_preview: true,
         text: onTrial
-          ? 'Три бесплатных утра в <b>СОМА УТРО</b> закончились 🌿 Спасибо, что был(а) с нами.\n\nВернуться в эфиры и группу — 1490 ₽ в месяц, 5 живых утр в неделю:'
+          ? 'Бесплатный доступ в <b>СОМА УТРО</b> закончился 🌿 Спасибо, что был(а) с нами.\n\nВернуться в эфиры и группу — 1490 ₽ в месяц, 5 живых утр в неделю:'
           : 'Твой доступ в <b>СОМА УТРО</b> закончился 🌿 Будем рады видеть снова — продлить можно здесь:',
         reply_markup: renewKb
       });
@@ -93,13 +93,13 @@ exports.handler = async () => {
     }
 
     // Напоминание за 3 дня — один раз на цикл (сравниваем с reminded_until).
-    const soon = paidUntil - now <= (onTrial ? 24 * 60 * 60 * 1000 : REMIND_MS); // пробные 3 утра — напоминаем в последний день
+    const soon = paidUntil - now <= (onTrial ? 24 * 60 * 60 * 1000 : REMIND_MS); // пробное живое утро — напоминаем в последний день
     const alreadyReminded = m.reminded_until && new Date(m.reminded_until).getTime() >= paidUntil;
     if (soon && !alreadyReminded) {
       await tg(TELEGRAM_BOT_TOKEN, 'sendMessage', {
         chat_id: m.telegram_user_id, parse_mode: 'HTML', disable_web_page_preview: true,
         text: onTrial
-          ? 'Как тебе три утра в клубе? 🌿 Сегодня последний бесплатный день — завтра доступ в группу закроется.\n\nЧтобы остаться с нами — 1490 ₽ в месяц, меньше 50 ₽ за утро 👇'
+          ? 'Как тебе живое утро в клубе? 🌿 Сегодня последний бесплатный день — завтра доступ в группу закроется.\n\nЧтобы остаться с нами — 1490 ₽ в месяц, 5 живых утр в неделю, меньше 50 ₽ за утро 👇'
           : 'Напоминаем: доступ в <b>СОМА УТРО</b> заканчивается через пару дней. Чтобы не потерять эфиры — продли заранее 👇',
         reply_markup: renewKb
       });
