@@ -74,10 +74,20 @@ async function getVideos(SUPABASE_URL, KEY) {
   } catch (e) { console.error('[free3] getVideos', e && e.message); return { 1: null, 2: null, 3: null }; }
 }
 
-// Отправить зарядку дня: видео с подписью (если file_id есть) или текст-фолбэк.
+// Отправить зарядку дня: видео с подписью; если file_id сохранён как файл/гифка — шлём тем же типом;
+// если не вышло ничего — текст-фолбэк, чтобы человек не остался без сообщения.
 async function sendPractice(token, chatId, fileId, caption, extra) {
   if (fileId) {
-    return tg(token, 'sendVideo', { chat_id: chatId, video: fileId, caption, parse_mode: 'HTML', ...(extra || {}) });
+    const base = { chat_id: chatId, caption, parse_mode: 'HTML', ...(extra || {}) };
+    let r = await tg(token, 'sendVideo', { ...base, video: fileId });
+    if (r && r.ok) return r;
+    console.error('[free3] sendVideo', r && r.description);
+    r = await tg(token, 'sendDocument', { ...base, document: fileId });
+    if (r && r.ok) return r;
+    console.error('[free3] sendDocument', r && r.description);
+    r = await tg(token, 'sendAnimation', { ...base, animation: fileId });
+    if (r && r.ok) return r;
+    console.error('[free3] sendAnimation', r && r.description);
   }
   return tg(token, 'sendMessage', { chat_id: chatId, text: caption + '\n\n(видео скоро добавим)', parse_mode: 'HTML', ...(extra || {}) });
 }
